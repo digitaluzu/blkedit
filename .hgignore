@@ -1,0 +1,14 @@
+syntax: glob
+
+Library
+Temp
+*.pidb
+*.userprefs
+*.csproj
+*.sln
+*.DS_Store
+Builds/iOS/Data
+Builds/iOS/Libraries
+*.xcuserstate
+*.pbxuser
+Builds/iOS/Unity-iPhone.xcodeproj/xcuserdata
