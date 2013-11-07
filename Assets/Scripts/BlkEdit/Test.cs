@@ -28,8 +28,6 @@ namespace Blk
 				int x = (int)(pos.x / xSize);
 				int y = (int)(pos.y / ySize);
 				
-				Debug.Log(y);
-				
 				Vector3 sPos = new Vector3(x * xSize, y * ySize, 0) - new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0.0f);
 				
 				GameObject go = (GameObject)GameObject.Instantiate(_prefab);
@@ -41,7 +39,7 @@ namespace Blk
 				
 				Uzu.VectorI3 idx = new Uzu.VectorI3(x, y, 0);
 				Main.BlockWorld.SetBlockType(idx, Uzu.BlockType.SOLID);
-				//Main.BlockWorld.SetBlockColor(idx, Color.red);
+				Main.BlockWorld.SetBlockColor(idx, Color.red);
 			}
 		}
 	}
