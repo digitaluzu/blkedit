@@ -6,6 +6,7 @@ namespace Blk
 	public class Main : Uzu.Main
 	{
 		public Material _mat;
+		public Color _activeColor;
 		
 		#region Overrided methods.
 		protected override void OnMainBegin ()
