@@ -25,15 +25,15 @@ namespace Blk
 				Uzu.BlockWorldConfig config = new Uzu.BlockWorldConfig ();
 				config.BlockSize = new Vector3 (1.0f, 1.0f, 1.0f);
 				config.ChunkSizeInBlocks = Constants.CHUNK_SIZE_IN_BLOCKS;
+				config.MaxBlockTypeCount = (int)BlockType.MAX_COUNT;
 				{
-					Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)Uzu.BlockType.MAX_COUNT];
+					Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)BlockType.MAX_COUNT];
 					{
 						Uzu.BlockDesc desc = new Uzu.BlockDesc ();
 						descs [0] = desc;
 					}
 					{
 						Uzu.BlockDesc desc = new Uzu.BlockDesc ();
-						desc.Color = Color.red;
 						desc.Material = _mat;
 						descs [1] = desc;
 					}

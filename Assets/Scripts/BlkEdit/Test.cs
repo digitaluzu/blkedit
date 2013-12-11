@@ -42,9 +42,8 @@ namespace Blk
 					
 					go.GetComponent<UITexture>().color = Main.Instance._activeColor;
 					
-					
 					Uzu.VectorI3 idx = new Uzu.VectorI3(x, y, 0);
-					Main.BlockWorld.SetBlockType(idx, Uzu.BlockType.SOLID);
+					Main.BlockWorld.SetBlockType(idx, (Uzu.BlockType)BlockType.SOLID);
 					Main.BlockWorld.SetBlockColor(idx, Main.Instance._activeColor);
 				}
 			}
