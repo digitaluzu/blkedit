@@ -1,6 +1,6 @@
 //----------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2013 Tasharen Entertainment
+// Copyright © 2011-2014 Tasharen Entertainment
 //----------------------------------------------
 
 using UnityEngine;
@@ -9,7 +9,6 @@ using UnityEngine;
 /// Sample script showing how easy it is to implement a standard button that swaps sprites.
 /// </summary>
 
-[ExecuteInEditMode]
 [AddComponentMenu("NGUI/UI/Image Button")]
 public class UIImageButton : MonoBehaviour
 {
@@ -39,8 +38,11 @@ public class UIImageButton : MonoBehaviour
 		}
 	}
 
-	void Awake () { if (target == null) target = GetComponentInChildren<UISprite>(); }
-	void OnEnable () { UpdateImage(); }
+	void OnEnable ()
+	{
+		if (target == null) target = GetComponentInChildren<UISprite>();
+		UpdateImage();
+	}
 	
 	void UpdateImage()
 	{
@@ -53,7 +55,7 @@ public class UIImageButton : MonoBehaviour
 			else
 			{
 				target.spriteName = disabledSprite;
-			}	
+			}
 			target.MakePixelPerfect();
 		}
 	}
