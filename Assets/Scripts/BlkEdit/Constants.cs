@@ -12,7 +12,9 @@ namespace Blk
 	
 	public static class Constants
 	{
-		public const int CHUNK_SIZE_IN_BLOCKS_X = 20;
+		public static readonly Vector3 BLOCK_SIZE = Vector3.one;
+
+		public const int CHUNK_SIZE_IN_BLOCKS_X = 16;
 		public const int CHUNK_SIZE_IN_BLOCKS_Y = CHUNK_SIZE_IN_BLOCKS_X;
 		public const int CHUNK_SIZE_IN_BLOCKS_Z = 1;
 		/// <summary>

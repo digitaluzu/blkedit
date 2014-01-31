@@ -7,6 +7,10 @@ namespace Blk
 	{
 		public Material _mat;
 		public Color _activeColor;
+
+		public static Uzu.GameObjectPool GridCellPool {
+			get { return _instance._gridCellPool; }
+		}
 		
 		#region Overrided methods.
 		protected override void OnMainBegin ()
@@ -15,48 +19,63 @@ namespace Blk
 			
 			// Singleton creation.
 			{
+				// Create block world.
+				{
+					Uzu.BlockWorldConfig config = new Uzu.BlockWorldConfig ();
+					config.BlockSize = Constants.BLOCK_SIZE;
+					config.ChunkSizeInBlocks = Constants.CHUNK_SIZE_IN_BLOCKS;
+					config.MaxBlockTypeCount = (int)BlockType.MAX_COUNT;
+					{
+						Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)BlockType.MAX_COUNT];
+						{
+							Uzu.BlockDesc desc = new Uzu.BlockDesc ();
+							descs [0] = desc;
+						}
+						{
+							Uzu.BlockDesc desc = new Uzu.BlockDesc ();
+							desc.Material = _mat;
+							descs [1] = desc;
+						}
+						config.BlockDescs = descs;
+					}
+					
+					GameObject blockWorldGO = new GameObject ("UzuBlockWorld", typeof(Uzu.BlockWorld));
+					_blockWorld = blockWorldGO.GetComponent<Uzu.BlockWorld> ();
+					_blockWorld.Initialize (config);
+
+					{
+						_spinRegion.Target = _blockWorld.CachedXform;
+
+						float centerPosX = (_blockWorld.Config.BlockSize.x * _blockWorld.Config.ChunkSizeInBlocks.x) * 0.5f;
+						_spinRegion.RotationPoint = new Vector3 (centerPosX, 0.0f, 0.0f);
+
+						Uzu.Dbg.DrawSphere (_spinRegion.RotationPoint, 1.0f, Color.green);
+					}
+				}
+				
+				// Create block world controller.
+				{
+					Uzu.BlockWorldControllerConfig config = new Uzu.BlockWorldControllerConfig ();
+					config.TargetBlockWorld = _blockWorld;
+					config.LoadedChunkCount = Constants.LOADED_CHUNK_COUNT;
+					
+					GameObject blockWorldControllerGO = new GameObject ("UzuBlockWorldController", typeof(Uzu.BlockWorldController));
+					_blockWorldController = blockWorldControllerGO.GetComponent<Uzu.BlockWorldController> ();
+					_blockWorldController.Initialize (config);
+				}
 			}
 		}
 		
 		protected override void OnMainBegin2 ()
 		{
-			// Create block world.
-			{
-				Uzu.BlockWorldConfig config = new Uzu.BlockWorldConfig ();
-				config.BlockSize = new Vector3 (1.0f, 1.0f, 1.0f);
-				config.ChunkSizeInBlocks = Constants.CHUNK_SIZE_IN_BLOCKS;
-				config.MaxBlockTypeCount = (int)BlockType.MAX_COUNT;
-				{
-					Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)BlockType.MAX_COUNT];
-					{
-						Uzu.BlockDesc desc = new Uzu.BlockDesc ();
-						descs [0] = desc;
-					}
-					{
-						Uzu.BlockDesc desc = new Uzu.BlockDesc ();
-						desc.Material = _mat;
-						descs [1] = desc;
-					}
-					config.BlockDescs = descs;
-				}
-				
-				GameObject blockWorldGO = new GameObject ("UzuBlockWorld", typeof(Uzu.BlockWorld));
-				_blockWorld = blockWorldGO.GetComponent<Uzu.BlockWorld> ();
-				_blockWorld.Initialize (config);
-			}
-			
-			// Create block world controller.
-			{
-				Uzu.BlockWorldControllerConfig config = new Uzu.BlockWorldControllerConfig ();
-				config.TargetBlockWorld = _blockWorld;
-				config.LoadedChunkCount = Constants.LOADED_CHUNK_COUNT;
-				
-				GameObject blockWorldControllerGO = new GameObject ("UzuBlockWorldController", typeof(Uzu.BlockWorldController));
-				_blockWorldController = blockWorldControllerGO.GetComponent<Uzu.BlockWorldController> ();
-				_blockWorldController.Initialize (config);
-			}
+
 		}
-		
+
+		[SerializeField]
+		private Uzu.GameObjectPool _gridCellPool;
+		[SerializeField]
+		private SpinWithMouse _spinRegion;
+
 		private Uzu.BlockWorld _blockWorld;
 		private Uzu.BlockWorldController _blockWorldController;
 		
