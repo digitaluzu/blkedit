@@ -12,3 +12,4 @@ Builds/iOS/Libraries
 *.xcuserstate
 *.pbxuser
 Builds/iOS/Unity-iPhone.xcodeproj/xcuserdata
+*.unity3d
