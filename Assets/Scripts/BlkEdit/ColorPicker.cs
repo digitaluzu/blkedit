@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Blk
 {
+	// TODO: should be managed by panel??
 	public class ColorPicker : Uzu.BaseBehaviour
 	{
 		public Color32 ActiveColor {

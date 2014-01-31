@@ -7,6 +7,10 @@ namespace Blk
 	{
 		private static readonly Uzu.VectorI2 DIMENSIONS = new Uzu.VectorI2 (16, 16);
 
+		// TODO: temp
+		[SerializeField]
+		private UiPanelMain _panel;
+
 		private Camera _uiCamera;
 		private bool _isPressed;
 		private UITexture _gridSprite;
@@ -90,13 +94,26 @@ namespace Blk
 				_layer.SetCell (cellCoord, cell);
 			}
 
-			Color32 color = Main.ColorPicker.ActiveColor;
-			cell.SetColor (color);
-				
-			{
-				Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (cellCoord.x, cellCoord.y, 0);
-				Main.BlockWorld.SetBlockType(blockIndex, (Uzu.BlockType)BlockType.SOLID);
-				Main.BlockWorld.SetBlockColor(blockIndex, color);
+			bool isAdd = (_panel.CurrentMode == UiPanelMain.Mode.Add) ? true : false;
+
+			if (isAdd) {
+				Color32 color = Main.ColorPicker.ActiveColor;
+				cell.SetColor (color);
+					
+				{
+					Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (cellCoord.x, cellCoord.y, 0);
+					Main.BlockWorld.SetBlockType(blockIndex, (Uzu.BlockType)BlockType.SOLID);
+					Main.BlockWorld.SetBlockColor(blockIndex, color);
+				}
+			}
+			else {
+				cell.Unspawn ();
+				_layer.SetCell (cellCoord, null);
+
+				{
+					Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (cellCoord.x, cellCoord.y, 0);
+					Main.BlockWorld.SetBlockType(blockIndex, Uzu.BlockType.EMPTY);
+				}
 			}
 		}
 	}
