@@ -12,7 +12,7 @@ namespace Blk
 		private UITexture _gridSprite;
 
 		private Vector2 _cellSize;
-		private Vector3 _gridBasePosition;
+		private Vector3 _gridPivotOffset;
 		private int _cellSpriteDepth;
 
 		private GridLayer _layer;
@@ -32,7 +32,11 @@ namespace Blk
 		{
 			{
 				_cellSize = new Vector2 (_gridSprite.localSize.x / DIMENSIONS.x, _gridSprite.localSize.y / DIMENSIONS.y);
-				_gridBasePosition = CachedXform.localPosition;
+
+				{
+					Vector2 pivot = _gridSprite.pivotOffset;
+					_gridPivotOffset = new Vector3 (pivot.x * _gridSprite.width, pivot.y * _gridSprite.height, 0.0f);
+				}
 			}
 
 			// Drag handling.
@@ -59,7 +63,10 @@ namespace Blk
 				Vector3 touchWorldPos = _uiCamera.ScreenToWorldPoint (touchScreenPos);
 				Vector3 touchLocalPos = CachedXform.worldToLocalMatrix.MultiplyPoint3x4 (touchWorldPos);
 
+				touchLocalPos += _gridPivotOffset;
+
 				cellCoord = new Uzu.VectorI2 (touchLocalPos.x / _cellSize.x, touchLocalPos.y / _cellSize.y);
+				cellCoord = Uzu.VectorI2.Clamp (cellCoord, Uzu.VectorI2.zero, DIMENSIONS - Uzu.VectorI2.one);
 			}
 
 			PlaceAtCell (cellCoord);
@@ -71,7 +78,7 @@ namespace Blk
 
 			// Create new cell if one hasn't already been placed.
 			if (cell == null) {
-				Vector3 cellPos = cellCoord * _cellSize;
+				Vector3 cellPos = Uzu.Math.Vector2ToVector3 (cellCoord * _cellSize) - _gridPivotOffset;
 				GameObject go = Main.GridCellPool.Spawn (cellPos);
 				cell = go.GetComponent <GridCell> ();
 
