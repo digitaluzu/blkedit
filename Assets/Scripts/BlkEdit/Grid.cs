@@ -1,0 +1,98 @@
+﻿using UnityEngine;
+using System.Collections;
+
+namespace Blk
+{
+	public class Grid : Uzu.BaseBehaviour
+	{
+		private static readonly Uzu.VectorI2 DIMENSIONS = new Uzu.VectorI2 (16, 16);
+
+		private Camera _uiCamera;
+		private bool _isPressed;
+		private UITexture _gridSprite;
+
+		private Vector2 _cellSize;
+		private Vector3 _gridBasePosition;
+		private int _cellSpriteDepth;
+
+		private GridLayer _layer;
+
+		protected override void Awake ()
+		{
+			base.Awake ();
+
+			_uiCamera = NGUITools.FindCameraForLayer (this.gameObject.layer);
+			_gridSprite = GetComponent <UITexture> ();
+			_cellSpriteDepth = _gridSprite.depth - 1;
+
+			_layer = new GridLayer (DIMENSIONS);
+		}
+
+		private void Update ()
+		{
+			{
+				_cellSize = new Vector2 (_gridSprite.localSize.x / DIMENSIONS.x, _gridSprite.localSize.y / DIMENSIONS.y);
+				_gridBasePosition = CachedXform.localPosition;
+			}
+
+			// Drag handling.
+			if (_isPressed && UICamera.hoveredObject == this.gameObject) {
+				ProcessInput ();
+			}
+		}
+
+		private void OnPress (bool pressed)
+		{
+			_isPressed = pressed;
+
+			if (_isPressed) {
+				ProcessInput ();
+			}
+		}
+
+		private void ProcessInput ()
+		{
+			// Calculate cell coordinates.
+			Uzu.VectorI2 cellCoord;
+			{
+				Vector3 touchScreenPos = UICamera.lastTouchPosition;
+				Vector3 touchWorldPos = _uiCamera.ScreenToWorldPoint (touchScreenPos);
+				Vector3 touchLocalPos = CachedXform.worldToLocalMatrix.MultiplyPoint3x4 (touchWorldPos);
+
+				cellCoord = new Uzu.VectorI2 (touchLocalPos.x / _cellSize.x, touchLocalPos.y / _cellSize.y);
+			}
+
+			PlaceAtCell (cellCoord);
+		}
+
+		private void PlaceAtCell (Uzu.VectorI2 cellCoord)
+		{
+			GridCell cell = _layer.GetCell (cellCoord);
+
+			// Create new cell if one hasn't already been placed.
+			if (cell == null) {
+				Vector3 cellPos = cellCoord * _cellSize;
+				GameObject go = Main.GridCellPool.Spawn (cellPos);
+				cell = go.GetComponent <GridCell> ();
+
+				UISprite sprite = cell.Sprite;
+				sprite.depth = _cellSpriteDepth;
+				sprite.width = (int)_cellSize.x;
+				sprite.height = (int)_cellSize.y;
+
+				_layer.SetCell (cellCoord, cell);
+			}
+
+			// todo color
+			Color32 color = new Color32(255, 0, 0, 255);
+			
+			cell.SetColor (color);
+				
+			{
+				Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (cellCoord.x, cellCoord.y, 0);
+				Main.BlockWorld.SetBlockType(blockIndex, (Uzu.BlockType)BlockType.SOLID);
+				Main.BlockWorld.SetBlockColor(blockIndex, color);
+			}
+		}
+	}
+}
