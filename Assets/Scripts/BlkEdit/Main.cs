@@ -6,7 +6,10 @@ namespace Blk
 	public class Main : Uzu.Main
 	{
 		public Material _mat;
-		public Color _activeColor;
+
+		public static ColorPicker ColorPicker {
+			get { return _instance._colorPicker; }
+		}
 
 		public static Uzu.GameObjectPool GridCellPool {
 			get { return _instance._gridCellPool; }
@@ -48,8 +51,6 @@ namespace Blk
 
 						float centerPosX = (_blockWorld.Config.BlockSize.x * _blockWorld.Config.ChunkSizeInBlocks.x) * 0.5f;
 						_spinRegion.RotationPoint = new Vector3 (centerPosX, 0.0f, 0.0f);
-
-						Uzu.Dbg.DrawSphere (_spinRegion.RotationPoint, 1.0f, Color.green);
 					}
 				}
 				
@@ -71,6 +72,13 @@ namespace Blk
 
 		}
 
+		protected override void OnMainEnd ()
+		{
+			_instance = null;
+		}
+
+		[SerializeField]
+		private ColorPicker _colorPicker;
 		[SerializeField]
 		private Uzu.GameObjectPool _gridCellPool;
 		[SerializeField]
@@ -81,11 +89,6 @@ namespace Blk
 		
 		public static Uzu.BlockWorld BlockWorld {
 			get { return _instance._blockWorld; }
-		}
-		
-		protected override void OnMainEnd ()
-		{
-			_instance = null;
 		}
 		#endregion
 		

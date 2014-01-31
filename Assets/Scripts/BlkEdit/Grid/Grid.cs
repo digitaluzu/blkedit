@@ -90,9 +90,7 @@ namespace Blk
 				_layer.SetCell (cellCoord, cell);
 			}
 
-			// todo color
-			Color32 color = new Color32(255, 0, 0, 255);
-			
+			Color32 color = Main.ColorPicker.ActiveColor;
 			cell.SetColor (color);
 				
 			{

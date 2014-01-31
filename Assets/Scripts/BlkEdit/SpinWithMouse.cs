@@ -33,10 +33,7 @@ namespace Blk
 		{
 			UICamera.currentTouch.clickNotification = UICamera.ClickNotification.None;
 
-///			blockWorld.CachedXform.RotateAround(centerPos, Vector3.up, spinSpeed);
 			_target.RotateAround (_rotationPoint, Vector3.up, -0.5f * delta.x * _speed);
-
-//			_target.localRotation = Quaternion.Euler(0f, -0.5f * delta.x * _speed, 0f) * _target.localRotation;
 		}
 	}
 }
