@@ -31,6 +31,17 @@ namespace Blk
 			_cells [idx] = cell;
 		}
 
+		public void ClearAll ()
+		{
+			for (int i = 0; i < _cells.Length; i++) {
+				GridCell cell = _cells [i];
+				if (cell != null) {
+					cell.Unspawn ();
+					_cells [i] = null;
+				}
+			}
+		}
+
 		#region Implementation.
 		private Uzu.VectorI2 _dimensions;
 		private GridCell[] _cells;

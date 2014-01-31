@@ -7,6 +7,10 @@ namespace Blk
 	{
 		public Material _mat;
 
+		public static Material Mat {
+			get { return _instance._mat; }
+		}
+
 		public static ColorPicker ColorPicker {
 			get { return _instance._colorPicker; }
 		}
@@ -52,17 +56,9 @@ namespace Blk
 						float centerPosX = (_blockWorld.Config.BlockSize.x * _blockWorld.Config.ChunkSizeInBlocks.x) * 0.5f;
 						_spinRegion.RotationPoint = new Vector3 (centerPosX, 0.0f, 0.0f);
 					}
-				}
-				
-				// Create block world controller.
-				{
-					Uzu.BlockWorldControllerConfig config = new Uzu.BlockWorldControllerConfig ();
-					config.TargetBlockWorld = _blockWorld;
-					config.LoadedChunkCount = Constants.LOADED_CHUNK_COUNT;
-					
-					GameObject blockWorldControllerGO = new GameObject ("UzuBlockWorldController", typeof(Uzu.BlockWorldController));
-					_blockWorldController = blockWorldControllerGO.GetComponent<Uzu.BlockWorldController> ();
-					_blockWorldController.Initialize (config);
+
+					// Manually load.
+					_blockWorld.LoadChunk (Uzu.VectorI3.zero);
 				}
 			}
 		}
@@ -85,10 +81,17 @@ namespace Blk
 		private SpinWithMouse _spinRegion;
 
 		private Uzu.BlockWorld _blockWorld;
-		private Uzu.BlockWorldController _blockWorldController;
 		
 		public static Uzu.BlockWorld BlockWorld {
 			get { return _instance._blockWorld; }
+			set {
+				// TODO:
+				// Replace existing world.
+				GameObject.Destroy (_instance._blockWorld.gameObject);
+				_instance._blockWorld = value;
+
+				_instance._spinRegion.Target = value.CachedXform;
+			}
 		}
 		#endregion
 		

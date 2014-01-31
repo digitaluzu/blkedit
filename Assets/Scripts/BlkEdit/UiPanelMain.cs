@@ -6,6 +6,8 @@ namespace Blk
 	public class UiPanelMain : Uzu.UiPanel
 	{
 		private const string MODE_BUTTON_ID = "ModeButton";
+		private const string SAVE_BUTTON_ID = "SaveButton";
+		private const string LOAD_BUTTON_ID = "LoadButton";
 
 		[SerializeField]
 		private UILabel _modeButton;
@@ -40,27 +42,40 @@ namespace Blk
 					}
 				}
 				break;
+
+				case SAVE_BUTTON_ID:
+				{
+					DoSave ();
+				}
+				break;
+
+				case LOAD_BUTTON_ID:
+				{
+					DoLoad ();
+				}
+				break;
 			}
 		}
-		
-		public override void OnActivate ()
+
+		private const string FILENAME = "TestData/abc.txt";
+
+		private void DoSave ()
 		{
+			Uzu.BlockExporter exporter = new Uzu.BlockExporter();
+			Uzu.BlockPack pack = new Uzu.BlockPack ();
+			pack._blockWorld = Main.BlockWorld;
+			exporter.Export (FILENAME, pack);
 		}
-		
-		public override void OnDeactivate ()
+
+		private void DoLoad ()
 		{
-		}
-			
-		private void OnPressStart (Uzu.UiWidget widget)
-		{
-			Debug.Log(widget.name);
-		}
-		
-		public override void OnUpdate ()
-		{		
-	#if UNITY_EDITOR
-	
-	#endif // UNITY_EDITOR
+			Uzu.BlockImporter importer = new Uzu.BlockImporter ();
+			Uzu.BlockPack pack = importer.Import (FILENAME);
+			Main.BlockWorld = pack._blockWorld;
+
+			// TODO:
+			Grid grid = GameObject.Find ("Grid").GetComponent <Grid> ();
+			grid.TODO_ForceRefreshWithCurrentWorld ();
 		}
 	}
 }

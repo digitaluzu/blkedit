@@ -49,6 +49,30 @@ namespace Blk
 			}
 		}
 
+		public void TODO_ForceRefreshWithCurrentWorld ()
+		{
+			// for each non-empty idx of world, place cell of appropriate color
+			Uzu.BlockWorld blockWorld = Main.BlockWorld;
+
+			// clear all contents
+			{
+				_layer.ClearAll ();
+			}
+
+			for (int x = 0; x < blockWorld.Config.ChunkSizeInBlocks.x; x++) {
+				for (int y = 0; y < blockWorld.Config.ChunkSizeInBlocks.y; y++) {
+					Uzu.VectorI3 idx = new Uzu.VectorI3 (x, y, 0);
+					Uzu.BlockType blockType = blockWorld.GetBlockType (idx);
+					if (blockType != Uzu.BlockType.EMPTY) {
+						Color32 color = blockWorld.GetBlockColor (idx);
+
+						Uzu.VectorI2 cellCoord = new Uzu.VectorI2 (idx.x, idx.y);
+						PlaceAtCell (cellCoord, color);
+					}
+				}
+			}
+		}
+
 		private void OnPress (bool pressed)
 		{
 			_isPressed = pressed;
@@ -73,10 +97,11 @@ namespace Blk
 				cellCoord = Uzu.VectorI2.Clamp (cellCoord, Uzu.VectorI2.zero, DIMENSIONS - Uzu.VectorI2.one);
 			}
 
-			PlaceAtCell (cellCoord);
+			Color32 color = Main.ColorPicker.ActiveColor;
+			PlaceAtCell (cellCoord, color);
 		}
 
-		private void PlaceAtCell (Uzu.VectorI2 cellCoord)
+		private void PlaceAtCell (Uzu.VectorI2 cellCoord, Color32 color)
 		{
 			GridCell cell = _layer.GetCell (cellCoord);
 
@@ -97,7 +122,6 @@ namespace Blk
 			bool isAdd = (_panel.CurrentMode == UiPanelMain.Mode.Add) ? true : false;
 
 			if (isAdd) {
-				Color32 color = Main.ColorPicker.ActiveColor;
 				cell.SetColor (color);
 					
 				{
