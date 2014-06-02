@@ -18,6 +18,10 @@ namespace Blk
 		public static Uzu.GameObjectPool GridCellPool {
 			get { return _instance._gridCellPool; }
 		}
+
+		public static CommandMgr CommandMgr {
+			get { return _instance._commandMgr; }
+		}
 		
 		#region Overrided methods.
 		protected override void OnMainBegin ()
@@ -26,6 +30,8 @@ namespace Blk
 			
 			// Singleton creation.
 			{
+				_commandMgr = new CommandMgr ();
+
 				// Create block world.
 				{
 					Uzu.BlockWorldConfig config = new Uzu.BlockWorldConfig ();
@@ -80,6 +86,7 @@ namespace Blk
 		[SerializeField]
 		private SpinWithMouse _spinRegion;
 
+		private CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
 		
 		public static Uzu.BlockWorld BlockWorld {
