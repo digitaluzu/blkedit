@@ -10,46 +10,46 @@ namespace Blk
 			_dimensions = dimensions;
 			
 			int totalCount = Uzu.VectorI2.ElementProduct (_dimensions);
-			_cells = new GridCell[totalCount];
-		}
-		
-		public bool IsCellSet (Uzu.VectorI2 cellCoord)
-		{
-			int idx = CoordToIndex (cellCoord);
-			return _cells [idx] != null;
+			_states = new bool[totalCount];
+			_colors = new Color32[totalCount];
 		}
 
-		public GridCell GetCell (Uzu.VectorI2 cellCoord)
+		public bool IsSet (Uzu.VectorI2 coord)
 		{
-			int idx = CoordToIndex (cellCoord);
-			return _cells [idx];
-		}
-		
-		public void SetCell (Uzu.VectorI2 cellCoord, GridCell cell)
-		{
-			int idx = CoordToIndex (cellCoord);
-			_cells [idx] = cell;
+			int idx = Grid.CoordToIndex (_dimensions, coord);
+			return _states [idx];
 		}
 
-		public void ClearAll ()
+		public void Unset (Uzu.VectorI2 coord)
 		{
-			for (int i = 0; i < _cells.Length; i++) {
-				GridCell cell = _cells [i];
-				if (cell != null) {
-					cell.Unspawn ();
-					_cells [i] = null;
-				}
+			int idx = Grid.CoordToIndex (_dimensions, coord);
+			_states [idx] = false;
+		}
+
+		public Color32 GetColor (Uzu.VectorI2 coord)
+		{
+			int idx = Grid.CoordToIndex (_dimensions, coord);
+			return _colors [idx];
+		}
+
+		public void SetColor (Uzu.VectorI2 coord, Color32 color)
+		{
+			int idx = Grid.CoordToIndex (_dimensions, coord);
+			_states [idx] = true;
+			_colors [idx] = color;
+		}
+
+		public void Clear ()
+		{
+			for (int i = 0; i < _states.Length; i++) {
+				_states [i] = false;
 			}
 		}
 
 		#region Implementation.
 		private Uzu.VectorI2 _dimensions;
-		private GridCell[] _cells;
-		
-		private int CoordToIndex (Uzu.VectorI2 cellCoord)
-		{
-			return cellCoord.y * _dimensions.x + cellCoord.x;
-		}
+		private bool[] _states;
+		private Color32[] _colors;
 		#endregion
 	};
 }

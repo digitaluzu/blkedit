@@ -7,138 +7,110 @@ namespace Blk
 	{
 		private static readonly Uzu.VectorI2 DIMENSIONS = new Uzu.VectorI2 (16, 16);
 
-		// TODO: temp
-		[SerializeField]
-		private UiPanelMain _panel;
+		public static int CoordToIndex (Uzu.VectorI2 dimensions, Uzu.VectorI2 coord)
+		{
+			return coord.y * dimensions.x + coord.x;
+		}
 
-		private Camera _uiCamera;
-		private bool _isPressed;
-		private UITexture _gridSprite;
+		public bool IsSet (Uzu.VectorI2 coord)
+		{
+			return _currentLayer.IsSet (coord);
+		}
 
-		private Vector2 _cellSize;
-		private Vector3 _gridPivotOffset;
-		private int _cellSpriteDepth;
+		public void Unset (Uzu.VectorI2 coord)
+		{
+			_currentLayer.Unset (coord);
 
-		private GridLayer _layer;
+			// Sprite display.
+			{
+				int idx = CoordToIndex (DIMENSIONS, coord);
+				GridCell cell = _cells [idx];
+				cell.Sprite.enabled = false;
+			}
+
+			// Block world.
+			{
+				Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (coord.x, coord.y, 0);
+				Main.BlockWorld.SetBlockType (blockIndex, Uzu.BlockType.EMPTY);
+			}
+		}
+
+		public Color32 GetColor (Uzu.VectorI2 coord)
+		{
+			return _currentLayer.GetColor (coord);
+		}
+
+		public void SetColor (Uzu.VectorI2 coord, Color32 color)
+		{
+			_currentLayer.SetColor (coord, color);
+
+			// Sprite display.
+			{
+				int idx = CoordToIndex (DIMENSIONS, coord);
+				GridCell cell = _cells [idx];
+				cell.Sprite.color = color;
+				cell.Sprite.enabled = true;
+			}
+
+			// Block world.
+			{
+				Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (coord.x, coord.y, 0);
+				Main.BlockWorld.SetBlockType (blockIndex, Uzu.BlockType.SOLID);
+				Main.BlockWorld.SetBlockColor (blockIndex, color);
+			}
+		}
+
+		#region Implementation.
+		private GridLayer _currentLayer;
+		private Uzu.FixedList <GridCell> _cells;
 
 		protected override void Awake ()
 		{
 			base.Awake ();
 
-			_uiCamera = NGUITools.FindCameraForLayer (this.gameObject.layer);
-			_gridSprite = GetComponent <UITexture> ();
-			_cellSpriteDepth = _gridSprite.depth - 1;
-
-			_layer = new GridLayer (DIMENSIONS);
+			_currentLayer = new GridLayer (DIMENSIONS);
 		}
 
-		private void Update ()
+		private void Start ()
 		{
+			// Allocate and initialize sprite resources.
 			{
-				_cellSize = new Vector2 (_gridSprite.localSize.x / DIMENSIONS.x, _gridSprite.localSize.y / DIMENSIONS.y);
+				UITexture gridSprite = GetComponent <UITexture> ();
+				int cellSpriteDepth = gridSprite.depth - 1;
+				Vector2 cellSize = new Vector2 (gridSprite.localSize.x / DIMENSIONS.x, gridSprite.localSize.y / DIMENSIONS.y);
+				Vector3 gridPivotOffset;
 
 				{
-					Vector2 pivot = _gridSprite.pivotOffset;
-					_gridPivotOffset = new Vector3 (pivot.x * _gridSprite.width, pivot.y * _gridSprite.height, 0.0f);
+					Vector2 pivot = gridSprite.pivotOffset;
+					gridPivotOffset = new Vector3 (pivot.x * gridSprite.width, pivot.y * gridSprite.height, 0.0f);
 				}
-			}
 
-			// Drag handling.
-			if (_isPressed && UICamera.hoveredObject == this.gameObject) {
-				ProcessInput ();
-			}
-		}
+				int totalCount = Uzu.VectorI2.ElementProduct (DIMENSIONS);
+				_cells = new Uzu.FixedList<GridCell> (totalCount);
 
-		public void TODO_ForceRefreshWithCurrentWorld ()
-		{
-			// for each non-empty idx of world, place cell of appropriate color
-			Uzu.BlockWorld blockWorld = Main.BlockWorld;
+				for (int y = 0; y < DIMENSIONS.y; y++) {
+					for (int x = 0; x < DIMENSIONS.x; x++) {
+						Uzu.VectorI2 coord = new Uzu.VectorI2 (x, y);
 
-			// clear all contents
-			{
-				_layer.ClearAll ();
-			}
+						Vector3 pos = Uzu.Math.Vector2ToVector3 (coord * cellSize) - gridPivotOffset;
+						GameObject go = Main.GridCellPool.Spawn (pos);
+						GridCell cell = go.GetComponent <GridCell> ();
 
-			for (int x = 0; x < blockWorld.Config.ChunkSizeInBlocks.x; x++) {
-				for (int y = 0; y < blockWorld.Config.ChunkSizeInBlocks.y; y++) {
-					Uzu.VectorI3 idx = new Uzu.VectorI3 (x, y, 0);
-					Uzu.BlockType blockType = blockWorld.GetBlockType (idx);
-					if (blockType != Uzu.BlockType.EMPTY) {
-						Color32 color = blockWorld.GetBlockColor (idx);
+						UISprite sprite = cell.Sprite;
+						sprite.depth = cellSpriteDepth;
+						sprite.width = (int)cellSize.x;
+						sprite.height = (int)cellSize.y;
 
-						Uzu.VectorI2 cellCoord = new Uzu.VectorI2 (idx.x, idx.y);
-						PlaceAtCell (cellCoord, color);
+						_cells.Add (cell);
+
+						cell.Sprite.enabled = false;
 					}
 				}
 			}
+
+			AddBlockCommand cmd = new AddBlockCommand (this, Uzu.VectorI2.zero, Color.red);
+			Main.CommandMgr.DoCommand (cmd);
 		}
-
-		private void OnPress (bool pressed)
-		{
-			_isPressed = pressed;
-
-			if (_isPressed) {
-				ProcessInput ();
-			}
-		}
-
-		private void ProcessInput ()
-		{
-			// Calculate cell coordinates.
-			Uzu.VectorI2 cellCoord;
-			{
-				Vector3 touchScreenPos = UICamera.lastTouchPosition;
-				Vector3 touchWorldPos = _uiCamera.ScreenToWorldPoint (touchScreenPos);
-				Vector3 touchLocalPos = CachedXform.worldToLocalMatrix.MultiplyPoint3x4 (touchWorldPos);
-
-				touchLocalPos += _gridPivotOffset;
-
-				cellCoord = new Uzu.VectorI2 (touchLocalPos.x / _cellSize.x, touchLocalPos.y / _cellSize.y);
-				cellCoord = Uzu.VectorI2.Clamp (cellCoord, Uzu.VectorI2.zero, DIMENSIONS - Uzu.VectorI2.one);
-			}
-
-			Color32 color = Main.ColorPicker.ActiveColor;
-			PlaceAtCell (cellCoord, color);
-		}
-
-		private void PlaceAtCell (Uzu.VectorI2 cellCoord, Color32 color)
-		{
-			GridCell cell = _layer.GetCell (cellCoord);
-
-			// Create new cell if one hasn't already been placed.
-			if (cell == null) {
-				Vector3 cellPos = Uzu.Math.Vector2ToVector3 (cellCoord * _cellSize) - _gridPivotOffset;
-				GameObject go = Main.GridCellPool.Spawn (cellPos);
-				cell = go.GetComponent <GridCell> ();
-
-				UISprite sprite = cell.Sprite;
-				sprite.depth = _cellSpriteDepth;
-				sprite.width = (int)_cellSize.x;
-				sprite.height = (int)_cellSize.y;
-
-				_layer.SetCell (cellCoord, cell);
-			}
-
-			bool isAdd = (_panel.CurrentMode == UiPanelMain.Mode.Add) ? true : false;
-
-			if (isAdd) {
-				cell.SetColor (color);
-					
-				{
-					Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (cellCoord.x, cellCoord.y, 0);
-					Main.BlockWorld.SetBlockType(blockIndex, Uzu.BlockType.SOLID);
-					Main.BlockWorld.SetBlockColor(blockIndex, color);
-				}
-			}
-			else {
-				cell.Unspawn ();
-				_layer.SetCell (cellCoord, null);
-
-				{
-					Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (cellCoord.x, cellCoord.y, 0);
-					Main.BlockWorld.SetBlockType(blockIndex, Uzu.BlockType.EMPTY);
-				}
-			}
-		}
+		#endregion
 	}
 }
