@@ -25,5 +25,7 @@ namespace Blk
 		public static Uzu.VectorI3 CHUNK_SIZE_IN_BLOCKS {
 			get { return new Uzu.VectorI3 (CHUNK_SIZE_IN_BLOCKS_X, CHUNK_SIZE_IN_BLOCKS_Y, CHUNK_SIZE_IN_BLOCKS_Z); }
 		}
+
+		public static readonly Uzu.VectorI2 GRID_DIMENSIONS = new Uzu.VectorI2 (16, 16);
 	}
 }

@@ -302,7 +302,7 @@ GameObject:
   - 114: {fileID: 405125990}
   - 54: {fileID: 405125991}
   m_Layer: 8
-  m_Name: MainPanel
+  m_Name: Panel-Main
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2796,7 +2796,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e9603034602c436aa1cc988515631d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _panel: {fileID: 405125990}
 --- !u!1 &1873161009
 GameObject:
   m_ObjectHideFlags: 0

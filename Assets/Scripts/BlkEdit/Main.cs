@@ -19,6 +19,10 @@ namespace Blk
 			get { return _instance._gridCellPool; }
 		}
 
+		public static Uzu.UiPanelMgr PanelMgr {
+			get { return _instance._panelMgr; }
+		}
+
 		public static CommandMgr CommandMgr {
 			get { return _instance._commandMgr; }
 		}
@@ -71,7 +75,7 @@ namespace Blk
 		
 		protected override void OnMainBegin2 ()
 		{
-			_panelMgr.ChangeCurrentPanel ("MainPanel");
+			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_MAIN);
 		}
 
 		protected override void OnMainEnd ()

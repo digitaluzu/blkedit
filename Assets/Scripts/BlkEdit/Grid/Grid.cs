@@ -5,7 +5,13 @@ namespace Blk
 {
 	public class Grid : Uzu.BaseBehaviour
 	{
-		private static readonly Uzu.VectorI2 DIMENSIONS = new Uzu.VectorI2 (16, 16);
+		public Vector3 TEMP_GridPivotOffset {
+			get { return _TEMP_gridPivotOffset; }
+		}
+
+		public Vector2 TEMP_CellSize {
+			get { return _TEMP_cellSize; }
+		}
 
 		public static int CoordToIndex (Uzu.VectorI2 dimensions, Uzu.VectorI2 coord)
 		{
@@ -23,7 +29,7 @@ namespace Blk
 
 			// Sprite display.
 			{
-				int idx = CoordToIndex (DIMENSIONS, coord);
+				int idx = CoordToIndex (Constants.GRID_DIMENSIONS, coord);
 				GridCell cell = _cells [idx];
 				cell.Sprite.enabled = false;
 			}
@@ -46,7 +52,7 @@ namespace Blk
 
 			// Sprite display.
 			{
-				int idx = CoordToIndex (DIMENSIONS, coord);
+				int idx = CoordToIndex (Constants.GRID_DIMENSIONS, coord);
 				GridCell cell = _cells [idx];
 				cell.Sprite.color = color;
 				cell.Sprite.enabled = true;
@@ -64,11 +70,14 @@ namespace Blk
 		private GridLayer _currentLayer;
 		private Uzu.FixedList <GridCell> _cells;
 
+		private Vector3 _TEMP_gridPivotOffset;
+		private Vector2 _TEMP_cellSize;
+
 		protected override void Awake ()
 		{
 			base.Awake ();
 
-			_currentLayer = new GridLayer (DIMENSIONS);
+			_currentLayer = new GridLayer (Constants.GRID_DIMENSIONS);
 		}
 
 		private void Start ()
@@ -77,19 +86,22 @@ namespace Blk
 			{
 				UITexture gridSprite = GetComponent <UITexture> ();
 				int cellSpriteDepth = gridSprite.depth - 1;
-				Vector2 cellSize = new Vector2 (gridSprite.localSize.x / DIMENSIONS.x, gridSprite.localSize.y / DIMENSIONS.y);
+				Vector2 cellSize = new Vector2 (gridSprite.localSize.x / Constants.GRID_DIMENSIONS.x, gridSprite.localSize.y / Constants.GRID_DIMENSIONS.y);
 				Vector3 gridPivotOffset;
 
 				{
 					Vector2 pivot = gridSprite.pivotOffset;
 					gridPivotOffset = new Vector3 (pivot.x * gridSprite.width, pivot.y * gridSprite.height, 0.0f);
+
+					_TEMP_gridPivotOffset = gridPivotOffset;
+					_TEMP_cellSize = cellSize;
 				}
 
-				int totalCount = Uzu.VectorI2.ElementProduct (DIMENSIONS);
+				int totalCount = Uzu.VectorI2.ElementProduct (Constants.GRID_DIMENSIONS);
 				_cells = new Uzu.FixedList<GridCell> (totalCount);
 
-				for (int y = 0; y < DIMENSIONS.y; y++) {
-					for (int x = 0; x < DIMENSIONS.x; x++) {
+				for (int y = 0; y < Constants.GRID_DIMENSIONS.y; y++) {
+					for (int x = 0; x < Constants.GRID_DIMENSIONS.x; x++) {
 						Uzu.VectorI2 coord = new Uzu.VectorI2 (x, y);
 
 						Vector3 pos = Uzu.Math.Vector2ToVector3 (coord * cellSize) - gridPivotOffset;
