@@ -36,6 +36,7 @@ namespace Uzu
 			long kbCount = byteCount / 1024;
 
 			if (kbCount > 0) {
+				byteCount -= (kbCount * 1024);
 				return kbCount + "KB, " + byteCount + "B";
 			}
 

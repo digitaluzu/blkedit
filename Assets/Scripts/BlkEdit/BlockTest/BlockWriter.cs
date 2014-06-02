@@ -6,78 +6,80 @@ namespace Uzu
 {
 	public static class BlockWriter
 	{
-		public static byte[] Write (BlockPack pack)
+		public static byte[] Write (Chunk chunk)
 		{
 			using (MemoryStream stream = new MemoryStream ()) {
 				using (BinaryWriter writer = new BinaryWriter (stream)) {
-					WriteImpl (writer, pack);
+					WriteImpl (writer, chunk);
 					return stream.ToArray ();
 				}
 			}
 		}
 
 		#region Implementation
-		private static void WriteImpl (BinaryWriter writer, BlockPack pack)
+		private static void WriteImpl (BinaryWriter writer, Chunk chunk)
 		{
-			BlockFormat.Header header = PrepareHeader (pack);
-			BlockFormat.Data data = PrepareData (pack);
+			BlockFormat.Header header = PrepareHeader (chunk);
+			BlockFormat.Data data = PrepareData (chunk);
 
 			{
 				writer.Write (header.version);
-				writer.Write (header.xCount);
-				writer.Write (header.yCount);
+				writer.Write (header.count.x);
+				writer.Write (header.count.y);
+				writer.Write (header.count.z);
 			}
 
 			{
+				for (int i = 0; i < data._states.Length; i++) {
+					writer.Write (data._states [i]);
 
+					BlockFormat.RGB rgb = data._colors [i];
+					writer.Write (rgb.r);
+					writer.Write (rgb.g);
+					writer.Write (rgb.b);
+				}
 			}
 		}
 
-		private static BlockFormat.Header PrepareHeader (BlockPack pack)
+		private static BlockFormat.Header PrepareHeader (Chunk chunk)
 		{
 			BlockFormat.Header header = new BlockFormat.Header ();
 
 			{
 				header.version = BlockFormat.CURRENT_VERSION;
-				
-				Uzu.VectorI3 chunkSizeInBlocks = pack._blockWorld.Config.ChunkSizeInBlocks;
-				header.xCount = chunkSizeInBlocks.x;
-				header.yCount = chunkSizeInBlocks.y;
+				header.count = chunk.Blocks.CountXYZ;
 			}
 
 			return header;
 		}
 
-		private static BlockFormat.Data PrepareData (BlockPack pack)
+		private static BlockFormat.Data PrepareData (Chunk chunk)
 		{
 			BlockFormat.Data data = new BlockFormat.Data ();
 
-			/*
-			 * 			BlockFormat format = new BlockFormat ();
+			VectorI3 xyz = chunk.Blocks.CountXYZ;
+
 			{
-				Uzu.VectorI3 chunkSizeInBlocks = pack._blockWorld.Config.ChunkSizeInBlocks;
-				format.xCount = chunkSizeInBlocks.x;
-				format.yCount = chunkSizeInBlocks.y;
+				int totalCount = VectorI3.ElementProduct (xyz);
+				data._states = new bool[totalCount];
+				data._colors = new BlockFormat.RGB[totalCount];
+			}
 
-				int totalCount = chunkSizeInBlocks.x * chunkSizeInBlocks.y;
-				format._blocks = new bool[totalCount];
-				format._colors = new BlockFormat.RGB[totalCount];
+			int cnt = 0;
+			for (int x = 0; x < xyz.x; x++) {
+				for (int y = 0; y < xyz.y; y++) {
+					for (int z = 0; z < xyz.z; z++) {
+						BlockType blockType = chunk.Blocks [cnt].Type;
 
-				int cnt = 0;
-				for (int x = 0; x < chunkSizeInBlocks.x; x++) {
-					for (int y = 0; y < chunkSizeInBlocks.y; y++) {
-						Uzu.VectorI3 idx = new VectorI3 (x, y, 0);
-						Uzu.BlockType blockType = pack._blockWorld.GetBlockType (idx);
 						if (blockType != BlockType.EMPTY) {
-							format._blocks [cnt] = true;
-							Color32 c = pack._blockWorld.GetBlockColor (idx);
-							format._colors [cnt] = new BlockFormat.RGB (c.r, c.g, c.b);
+							data._states [cnt] = true;
+							data._colors [cnt] = new BlockFormat.RGB (chunk.Blocks [cnt].Color);
 						}
+
 						cnt++;
 					}
 				}
 			}
-			 */
 
 			return data;
 		}

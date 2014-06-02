@@ -3,12 +3,6 @@ using System.Collections;
 
 namespace Uzu
 {
-	// TODO:
-	public class BlockPack
-	{
-		public BlockWorld _blockWorld;
-	}
-
 	public static class BlockFormat
 	{
 		public const int CURRENT_VERSION = 1;
@@ -16,8 +10,7 @@ namespace Uzu
 		public class Header
 		{
 			public int version;
-			public int xCount;
-			public int yCount;
+			public VectorI3 count;
 		}
 
 		public class Data
@@ -26,12 +19,18 @@ namespace Uzu
 			public RGB[] _colors;
 		}
 
-		[System.Serializable]
 		public struct RGB
 		{
-			byte r;
-			byte g;
-			byte b;
+			public byte r;
+			public byte g;
+			public byte b;
+
+			public RGB (Color32 color)
+			{
+				r = color.r;
+				g = color.g;
+				b = color.b;
+			}
 			
 			public RGB (byte inR, byte inG, byte inB)
 			{
@@ -39,7 +38,7 @@ namespace Uzu
 				g = inG;
 				b = inB;
 			}
-			
+
 			public Color32 ToColor32 ()
 			{
 				return new Color32 (r, g, b, 255);

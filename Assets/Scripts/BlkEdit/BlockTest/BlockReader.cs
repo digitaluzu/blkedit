@@ -6,7 +6,7 @@ namespace Uzu
 {
 	public static class BlockReader
 	{
-		public static BlockPack Read (byte[] data)
+		public static BlockFormat.Data Read (byte[] data)
 		{
 			using (MemoryStream stream = new MemoryStream (data)) {
 				using (BinaryReader reader = new BinaryReader (stream)) {
@@ -16,7 +16,7 @@ namespace Uzu
 		}
 
 		#region Implementation.
-		private static BlockPack ReadImpl (BinaryReader reader)
+		private static BlockFormat.Data ReadImpl (BinaryReader reader)
 		{
 			int version = reader.ReadInt32 ();
 
@@ -33,72 +33,39 @@ namespace Uzu
 			return null;
 		}
 
-		private static BlockPack ReadVersion_1 (int version, BinaryReader reader)
+		private static BlockFormat.Data ReadVersion_1 (int version, BinaryReader reader)
 		{
 			BlockFormat.Header header = new BlockFormat.Header ();
 
 			{
 				header.version = version;
-				header.xCount = reader.ReadInt32 ();
-				header.yCount = reader.ReadInt32 ();
+				header.count = new VectorI3 (reader.ReadInt32 (), reader.ReadInt32 (), reader.ReadInt32 ());
 			}
 
+			BlockFormat.Data data = new BlockFormat.Data ();
+
 			{
-				/*
-			BlockPack pack = new BlockPack ();
-			
-			{
-				BlockWorld blockWorld;
-				
-				// Create block world.
+				VectorI3 xyz = header.count;
+
 				{
-					Uzu.BlockWorldConfig config = new Uzu.BlockWorldConfig ();
-					config.BlockSize = Blk.Constants.BLOCK_SIZE;
-					config.ChunkSizeInBlocks = new VectorI3 (format.xCount, format.yCount, Blk.Constants.CHUNK_SIZE_IN_BLOCKS_Z);
-					config.MaxBlockTypeCount = (int)Uzu.BlockType.SYSTEM_DEFAULT_COUNT;
-					{
-						Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)Uzu.BlockType.SYSTEM_DEFAULT_COUNT];
-						{
-							Uzu.BlockDesc desc = new Uzu.BlockDesc ();
-							descs [0] = desc;
-						}
-						{
-							Uzu.BlockDesc desc = new Uzu.BlockDesc ();
-							desc.Material = Blk.Main.Mat;
-							descs [1] = desc;
-						}
-						config.BlockDescs = descs;
-					}
-					
-					GameObject blockWorldGO = new GameObject ("UzuBlockWorld", typeof(Uzu.BlockWorld));
-					blockWorld = blockWorldGO.GetComponent<Uzu.BlockWorld> ();
-					blockWorld.Initialize (config);
+					int totalCount = VectorI3.ElementProduct (xyz);
+					data._states = new bool[totalCount];
+					data._colors = new BlockFormat.RGB[totalCount];
 				}
-				
-				// TODO: manually load here?
-				blockWorld.LoadChunk (Uzu.VectorI3.zero);
-				
-				{
-					int cnt = 0;
-					for (int x = 0; x < format.xCount; x++) {
-						for (int y = 0; y < format.yCount; y++) {
-							bool isBlock = format._blocks [cnt];
-							if (isBlock) {
-								Uzu.VectorI3 idx = new VectorI3 (x, y, 0);
-								blockWorld.SetBlockType (idx, Uzu.BlockType.SOLID);
-								blockWorld.SetBlockColor (idx, format._colors [cnt].ToColor32 ());
-							}
+
+				int cnt = 0;
+				for (int x = 0; x < xyz.x; x++) {
+					for (int y = 0; y < xyz.y; y++) {
+						for (int z = 0; z < xyz.z; z++) {
+							data._states [cnt] = reader.ReadBoolean ();
+							data._colors [cnt] = new BlockFormat.RGB (reader.ReadByte (), reader.ReadByte (), reader.ReadByte ());
 							cnt++;
 						}
 					}
 				}
-				
-				pack._blockWorld = blockWorld;
-			}
-			*/
 			}
 
-			return null;
+			return data;
 		}
 		#endregion
 	}
