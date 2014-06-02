@@ -8,9 +8,15 @@ namespace Blk
 		private const string MODE_BUTTON_ID = "ModeButton";
 		private const string SAVE_BUTTON_ID = "SaveButton";
 		private const string LOAD_BUTTON_ID = "LoadButton";
+		private const string UNDO_BUTTON_ID = "UndoButton";
+		private const string REDO_BUTTON_ID = "RedoButton";
 
 		[SerializeField]
 		private UILabel _modeButton;
+		[SerializeField]
+		private UIButton _undoButton;
+		[SerializeField]
+		private UIButton _redoButton;
 
 		public enum Mode {
 			Add,
@@ -54,6 +60,43 @@ namespace Blk
 					DoLoad ();
 				}
 				break;
+
+			case UNDO_BUTTON_ID:
+				{
+					Main.CommandMgr.UndoCommand ();
+				}
+				break;
+
+			case REDO_BUTTON_ID:
+				{
+					Main.CommandMgr.RedoCommand ();
+				}
+				break;
+			}
+		}
+
+		public override void OnUpdate ()
+		{
+			if (Main.CommandMgr.HasCommandsToUndo) {
+				if (!_undoButton.isEnabled) {
+					_undoButton.isEnabled = true;
+				}
+			}
+			else {
+				if (_undoButton.isEnabled) {
+					_undoButton.isEnabled = false;
+				}
+			}
+
+			if (Main.CommandMgr.HasCommandsToRedo) {
+				if (!_redoButton.isEnabled) {
+					_redoButton.isEnabled = true;
+				}
+			}
+			else {
+				if (_redoButton.isEnabled) {
+					_redoButton.isEnabled = false;
+				}
 			}
 		}
 

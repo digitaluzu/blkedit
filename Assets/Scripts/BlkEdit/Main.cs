@@ -71,7 +71,7 @@ namespace Blk
 		
 		protected override void OnMainBegin2 ()
 		{
-
+			_panelMgr.ChangeCurrentPanel ("MainPanel");
 		}
 
 		protected override void OnMainEnd ()
@@ -85,6 +85,8 @@ namespace Blk
 		private Uzu.GameObjectPool _gridCellPool;
 		[SerializeField]
 		private SpinWithMouse _spinRegion;
+		[SerializeField]
+		private Uzu.UiPanelMgr _panelMgr;
 
 		private CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
