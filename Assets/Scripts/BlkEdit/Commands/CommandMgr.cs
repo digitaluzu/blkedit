@@ -21,6 +21,11 @@ namespace Blk
 		/// </summary>
 		public void DoCommand (CommandInterface cmd)
 		{
+			// New command was executed, so we must clear the
+			// redo buffer since we aren't supporting any type of
+			// undo tree or branching.
+			_redoCommands.Clear ();
+
 			_undoCommands.Push (cmd);
 
 			cmd.Do ();
