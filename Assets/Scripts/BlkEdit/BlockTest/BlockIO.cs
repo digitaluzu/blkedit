@@ -9,9 +9,9 @@ namespace Uzu
 		public static void WriteFile (string filePath, byte[] data)
 		{
 			using (FileStream resourceFile = new FileStream (filePath, FileMode.Create, FileAccess.Write)) {
-				Debug.Log ("Writing (" + ToByteStr (resourceFile.Length) + "): " + filePath);
+				Debug.Log ("Writing (" + ToByteStr (data.Length) + "): " + filePath);
 
-				resourceFile.Write (data, 0, (int)resourceFile.Length);
+				resourceFile.Write (data, 0, data.Length);
 			}
 		}
 
@@ -30,6 +30,7 @@ namespace Uzu
 			}
 		}
 
+		#region Implementation.
 		private static string ToByteStr (long byteCount)
 		{
 			long kbCount = byteCount / 1024;
@@ -40,5 +41,6 @@ namespace Uzu
 
 			return byteCount + "B";
 		}
+		#endregion
 	}
 }
