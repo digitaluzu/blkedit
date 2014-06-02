@@ -31,9 +31,9 @@ namespace Blk
 					Uzu.BlockWorldConfig config = new Uzu.BlockWorldConfig ();
 					config.BlockSize = Constants.BLOCK_SIZE;
 					config.ChunkSizeInBlocks = Constants.CHUNK_SIZE_IN_BLOCKS;
-					config.MaxBlockTypeCount = (int)BlockType.MAX_COUNT;
+					config.MaxBlockTypeCount = (int)Uzu.BlockType.SYSTEM_DEFAULT_COUNT;
 					{
-						Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)BlockType.MAX_COUNT];
+						Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)Uzu.BlockType.SYSTEM_DEFAULT_COUNT];
 						{
 							Uzu.BlockDesc desc = new Uzu.BlockDesc ();
 							descs [0] = desc;

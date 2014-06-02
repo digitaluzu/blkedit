@@ -126,7 +126,7 @@ namespace Blk
 					
 				{
 					Uzu.VectorI3 blockIndex = new Uzu.VectorI3 (cellCoord.x, cellCoord.y, 0);
-					Main.BlockWorld.SetBlockType(blockIndex, (Uzu.BlockType)BlockType.SOLID);
+					Main.BlockWorld.SetBlockType(blockIndex, Uzu.BlockType.SOLID);
 					Main.BlockWorld.SetBlockColor(blockIndex, color);
 				}
 			}

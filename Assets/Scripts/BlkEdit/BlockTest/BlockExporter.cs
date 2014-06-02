@@ -138,9 +138,9 @@ namespace Uzu
 					Uzu.BlockWorldConfig config = new Uzu.BlockWorldConfig ();
 					config.BlockSize = Blk.Constants.BLOCK_SIZE;
 					config.ChunkSizeInBlocks = new VectorI3 (format.xCount, format.yCount, Blk.Constants.CHUNK_SIZE_IN_BLOCKS_Z);
-					config.MaxBlockTypeCount = (int)Blk.BlockType.MAX_COUNT;
+					config.MaxBlockTypeCount = (int)Uzu.BlockType.SYSTEM_DEFAULT_COUNT;
 					{
-						Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)Blk.BlockType.MAX_COUNT];
+						Uzu.BlockDesc[] descs = new Uzu.BlockDesc[(int)Uzu.BlockType.SYSTEM_DEFAULT_COUNT];
 						{
 							Uzu.BlockDesc desc = new Uzu.BlockDesc ();
 							descs [0] = desc;
@@ -168,7 +168,7 @@ namespace Uzu
 							bool isBlock = format._blocks [cnt];
 							if (isBlock) {
 								Uzu.VectorI3 idx = new VectorI3 (x, y, 0);
-								blockWorld.SetBlockType (idx, (Uzu.BlockType)Blk.BlockType.SOLID);
+								blockWorld.SetBlockType (idx, Uzu.BlockType.SOLID);
 								blockWorld.SetBlockColor (idx, format._colors [cnt].ToColor32 ());
 							}
 							cnt++;
