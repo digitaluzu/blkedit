@@ -107,9 +107,6 @@ namespace Blk
 					}
 				}
 			}
-
-			AddBlockCommand cmd = new AddBlockCommand (this, Uzu.VectorI2.zero, Color.red);
-			Main.CommandMgr.DoCommand (cmd);
 		}
 		#endregion
 	}
