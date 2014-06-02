@@ -18,26 +18,33 @@ namespace Uzu
 		#region Implementation.
 		private static BlockPack ReadImpl (BinaryReader reader)
 		{
+			int version = reader.ReadInt32 ();
+
+			// Handle support of multiple released data versions.
+			// Deprecate support for versions as necessary.
+			switch (version) {
+			case 1:
+				return ReadVersion_1 (version, reader);
+			default:
+				Debug.LogError ("Unsupported version: " + version);
+				break;
+			}
+
+			return null;
+		}
+
+		private static BlockPack ReadVersion_1 (int version, BinaryReader reader)
+		{
 			BlockFormat.Header header = new BlockFormat.Header ();
 
 			{
-				header.version = reader.ReadInt32 ();
+				header.version = version;
 				header.xCount = reader.ReadInt32 ();
 				header.yCount = reader.ReadInt32 ();
 			}
 
-			BlockFormat.Data data = new BlockFormat.Data ();
-
 			{
-
-			}
-
-			return Prepare (header, data);
-		}
-
-		private static BlockPack Prepare (BlockFormat.Header header, BlockFormat.Data data)
-		{
-			/*
+				/*
 			BlockPack pack = new BlockPack ();
 			
 			{
@@ -89,6 +96,7 @@ namespace Uzu
 				pack._blockWorld = blockWorld;
 			}
 			*/
+			}
 
 			return null;
 		}
