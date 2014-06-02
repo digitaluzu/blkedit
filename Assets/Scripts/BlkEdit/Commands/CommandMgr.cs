@@ -35,7 +35,7 @@ namespace Blk
 				CommandInterface cmd = _undoCommands.Pop ();
 				_redoCommands.Push (cmd);
 
-				cmd.Do ();
+				cmd.Undo ();
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace Blk
 				CommandInterface cmd = _redoCommands.Pop ();
 				_undoCommands.Push (cmd);
 
-				cmd.Undo ();
+				cmd.Do ();
 			}
 		}
 
