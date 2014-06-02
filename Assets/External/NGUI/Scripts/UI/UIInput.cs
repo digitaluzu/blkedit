@@ -45,6 +45,14 @@ public class UIInput : MonoBehaviour
 		PhonePad = 5,
 		NamePhonePad = 6,
 		EmailAddress = 7,
+		HiddenInput = 8,
+	}
+
+	public enum OnReturnKey
+	{
+		Default,
+		Submit,
+		NewLine,
 	}
 
 	public delegate char OnValidate (string text, int charIndex, char addedChar);
@@ -74,6 +82,12 @@ public class UIInput : MonoBehaviour
 	public InputType inputType = InputType.Standard;
 
 	/// <summary>
+	/// What to do when the Return key is pressed on the keyboard.
+	/// </summary>
+
+	public OnReturnKey onReturnKey = OnReturnKey.Default;
+
+	/// <summary>
 	/// Keyboard type applies to mobile keyboards that get shown.
 	/// </summary>
 
@@ -89,7 +103,7 @@ public class UIInput : MonoBehaviour
 	/// Maximum number of characters allowed before input no longer works.
 	/// </summary>
 
-	public int characterLimit = 0; 
+	public int characterLimit = 0;
 
 	/// <summary>
 	/// Field in player prefs used to automatically save the value.
@@ -145,26 +159,29 @@ public class UIInput : MonoBehaviour
 
 	[SerializeField][HideInInspector] protected string mValue;
 
-	protected string mDefaultText = "";
-	protected Color mDefaultColor = Color.white;
-	protected float mPosition = 0f;
-	protected bool mDoInit = true;
-	protected UIWidget.Pivot mPivot = UIWidget.Pivot.TopLeft;
+	[System.NonSerialized] protected string mDefaultText = "";
+	[System.NonSerialized] protected Color mDefaultColor = Color.white;
+	[System.NonSerialized] protected float mPosition = 0f;
+	[System.NonSerialized] protected bool mDoInit = true;
+	[System.NonSerialized] protected UIWidget.Pivot mPivot = UIWidget.Pivot.TopLeft;
+	[System.NonSerialized] protected bool mLoadSavedValue = true;
 
 	static protected int mDrawStart = 0;
+	static protected string mLastIME = "";
 
 #if MOBILE
+	// Unity fails to compile if the touch screen keyboard is used on a non-mobile device
 	static protected TouchScreenKeyboard mKeyboard;
-#else
-	protected int mSelectionStart = 0;
-	protected int mSelectionEnd = 0;
-	protected UITexture mHighlight = null;
-	protected UITexture mCaret = null;
-	protected Texture2D mBlankTex = null;
-	protected float mNextBlink = 0f;
-
-	static protected string mLastIME = "";
 #endif
+	[System.NonSerialized] protected int mSelectionStart = 0;
+	[System.NonSerialized] protected int mSelectionEnd = 0;
+	[System.NonSerialized] protected UITexture mHighlight = null;
+	[System.NonSerialized] protected UITexture mCaret = null;
+	[System.NonSerialized] protected Texture2D mBlankTex = null;
+	[System.NonSerialized] protected float mNextBlink = 0f;
+	[System.NonSerialized] protected float mLastAlpha = 0f;
+	[System.NonSerialized] protected string mCached = "";
+	[System.NonSerialized] protected int mSelectMe = -1;
 
 	/// <summary>
 	/// Default text used by the input's label.
@@ -209,31 +226,28 @@ public class UIInput : MonoBehaviour
 			if (mDoInit) Init();
 			mDrawStart = 0;
 
-#if MOBILE && !UNITY_3_5
 			// BB10's implementation has a bug in Unity
+ #if UNITY_4_0 || UNITY_4_2 || UNITY_4_3
 			if (Application.platform == RuntimePlatform.BB10Player)
+ #else
+			if (Application.platform == RuntimePlatform.BlackBerryPlayer)
+ #endif
 				value = value.Replace("\\b", "\b");
-#endif
+
 			// Validate all input
 			value = Validate(value);
+
 #if MOBILE
 			if (isSelected && mKeyboard != null && mCached != value)
 			{
 				mKeyboard.text = value;
 				mCached = value;
 			}
-
+#endif
 			if (mValue != value)
 			{
 				mValue = value;
-				if (!isSelected) SaveToPlayerPrefs(value);
-				UpdateLabel();
-				ExecuteOnChange();
-			}
-#else
-			if (mValue != value)
-			{
-				mValue = value;
+				mLoadSavedValue = false;
 
 				if (isSelected)
 				{
@@ -253,7 +267,6 @@ public class UIInput : MonoBehaviour
 				UpdateLabel();
 				ExecuteOnChange();
 			}
-#endif
 		}
 	}
 
@@ -281,11 +294,85 @@ public class UIInput : MonoBehaviour
 	/// Current position of the cursor.
 	/// </summary>
 
+	public int cursorPosition
+	{
+		get
+		{
 #if MOBILE
-	protected int cursorPosition { get { return value.Length; } }
-#else
-	protected int cursorPosition { get { return isSelected ? mSelectionEnd : value.Length; } }
+			if (mKeyboard != null && !TouchScreenKeyboard.hideInput) return value.Length;
 #endif
+			return isSelected ? mSelectionEnd : value.Length;
+		}
+		set
+		{
+			if (isSelected)
+			{
+#if MOBILE
+				if (mKeyboard != null && !TouchScreenKeyboard.hideInput) return;
+#endif
+				mSelectionEnd = value;
+				UpdateLabel();
+			}
+		}
+	}
+
+	/// <summary>
+	/// Index of the character where selection begins.
+	/// </summary>
+
+	public int selectionStart
+	{
+		get
+		{
+#if MOBILE
+			if (mKeyboard != null && !TouchScreenKeyboard.hideInput) return 0;
+#endif
+			return isSelected ? mSelectionStart : value.Length;
+		}
+		set
+		{
+			if (isSelected)
+			{
+#if MOBILE
+				if (mKeyboard != null && !TouchScreenKeyboard.hideInput) return;
+#endif
+				mSelectionStart = value;
+				UpdateLabel();
+			}
+		}
+	}
+
+	/// <summary>
+	/// Index of the character where selection ends.
+	/// </summary>
+
+	public int selectionEnd
+	{
+		get
+		{
+#if MOBILE
+			if (mKeyboard != null && !TouchScreenKeyboard.hideInput) return value.Length;
+#endif
+			return isSelected ? mSelectionEnd : value.Length;
+		}
+		set
+		{
+			if (isSelected)
+			{
+#if MOBILE
+				if (mKeyboard != null && !TouchScreenKeyboard.hideInput) return;
+#endif
+				mSelectionEnd = value;
+				UpdateLabel();
+			}
+		}
+	}
+
+	/// <summary>
+	/// Caret, in case it's needed.
+	/// </summary>
+
+	public UITexture caret { get { return mCaret; } }
 
 	/// <summary>
 	/// Validate the specified text, returning the validated version.
@@ -316,11 +403,7 @@ public class UIInput : MonoBehaviour
 
 	void Start ()
 	{
-		if (string.IsNullOrEmpty(mValue))
-		{
-			if (!string.IsNullOrEmpty(savedAs) && PlayerPrefs.HasKey(savedAs))
-				value = PlayerPrefs.GetString(savedAs);
-		}
+		if (mLoadSavedValue && !string.IsNullOrEmpty(savedAs)) LoadValue();
 		else value = mValue.Replace("\\n", "\n");
 	}
 
@@ -336,6 +419,13 @@ public class UIInput : MonoBehaviour
 			mDefaultText = label.text;
 			mDefaultColor = label.color;
 			label.supportEncoding = false;
+
+			if (label.alignment == NGUIText.Alignment.Justified)
+			{
+				label.alignment = NGUIText.Alignment.Left;
+				Debug.LogWarning("Input fields using labels with justified alignment are not supported at this time", this);
+			}
+
 			mPivot = label.pivot;
 			mPosition = label.cachedTransform.localPosition.x;
 			UpdateLabel();
@@ -372,42 +462,11 @@ public class UIInput : MonoBehaviour
 	protected void OnSelectEvent ()
 	{
 		selection = this;
-
 		if (mDoInit) Init();
 
-		if (label != null && NGUITools.GetActive(this))
-		{
-			label.color = activeTextColor;
-#if MOBILE
-			if (Application.platform == RuntimePlatform.IPhonePlayer ||
-				Application.platform == RuntimePlatform.Android
-#if UNITY_WP8
-				|| Application.platform == RuntimePlatform.WP8Player
-#endif
-#if UNITY_BLACKBERRY
-				|| Application.platform == RuntimePlatform.BB10Player
-#endif
-			)
-			{
-				mKeyboard = (inputType == InputType.Password) ?
-					TouchScreenKeyboard.Open(mValue, TouchScreenKeyboardType.Default, false, false, true) :
-					TouchScreenKeyboard.Open(mValue, (TouchScreenKeyboardType)((int)keyboardType), inputType == InputType.AutoCorrect, label.multiLine, false, false, defaultText);
-			}
-			else
-#endif
-			{
-				Input.imeCompositionMode = IMECompositionMode.On;
-				Input.compositionCursorPos = (UICamera.current != null && UICamera.current.cachedCamera != null) ?
-					UICamera.current.cachedCamera.WorldToScreenPoint(label.worldCorners[0]) :
-					label.worldCorners[0];
-#if !MOBILE
-				mSelectionStart = 0;
-				mSelectionEnd = string.IsNullOrEmpty(mValue) ? 0 : mValue.Length;
-#endif
-				mDrawStart = 0;
-			}
-			UpdateLabel();
-		}
+		// Unity has issues bringing up the keyboard properly if it's in "hideInput" mode and you happen
+		// to select one input in the same Update as de-selecting another.
+		if (label != null && NGUITools.GetActive(this)) mSelectMe = Time.frameCount;
 	}
 
 	/// <summary>
@@ -435,10 +494,10 @@ public class UIInput : MonoBehaviour
 			}
 			else label.text = mValue;
 
-			Input.imeCompositionMode = IMECompositionMode.Off;
+			Input.imeCompositionMode = IMECompositionMode.Auto;
 			RestoreLabelPivot();
 		}
-		
+
 		selection = null;
 		UpdateLabel();
 	}
@@ -446,35 +505,7 @@ public class UIInput : MonoBehaviour
 	/// <summary>
 	/// Update the text based on input.
 	/// </summary>
-
-#if MOBILE
-	string mCached = "";
-
-	void Update()
-	{
-		if (mKeyboard != null && isSelected)
-		{
-			string text = mKeyboard.text;
-
-			if (mCached != text)
-			{
-				mCached = text;
-				value = text;
-			}
-
-			if (mKeyboard.done)
-			{
-#if !UNITY_3_5
-				if (!mKeyboard.wasCanceled)
-#endif
-					Submit();
-				mKeyboard = null;
-				isSelected = false;
-				mCached = "";
-			}
-		}
-	}
-#else
+	
 	void Update ()
 	{
 #if UNITY_EDITOR
@@ -484,31 +515,140 @@ public class UIInput : MonoBehaviour
 		{
 			if (mDoInit) Init();
 
-			if (selectOnTab != null && Input.GetKeyDown(KeyCode.Tab))
+			// Unity has issues bringing up the keyboard properly if it's in "hideInput" mode and you happen
+			// to select one input in the same Update as de-selecting another.
+			if (mSelectMe != -1 && mSelectMe != Time.frameCount)
 			{
-				UICamera.selectedObject = selectOnTab;
-				return;
-			}
+				mSelectMe = -1;
 
-			// Process input ignoring non-printable characters as they are not consistent.
-			// Windows has them, OSX may not. They get handled inside OnGUI() instead.
-			string s = Input.inputString;
-			
-			if (!string.IsNullOrEmpty(s))
-			{
-				for (int i = 0; i < s.Length; ++i)
+				label.color = activeTextColor;
+#if MOBILE
+				if (Application.platform == RuntimePlatform.IPhonePlayer
+					|| Application.platform == RuntimePlatform.Android
+					|| Application.platform == RuntimePlatform.WP8Player
+#if UNITY_4_0 || UNITY_4_2 || UNITY_4_3
+					|| Application.platform == RuntimePlatform.BB10Player
+#else
+					|| Application.platform == RuntimePlatform.BlackBerryPlayer
+#endif
+				)
 				{
-					char ch = s[i];
-					if (ch >= ' ') Insert(ch.ToString());
+					string val;
+					TouchScreenKeyboardType kt;
+
+					if (keyboardType == KeyboardType.HiddenInput)
+					{
+						TouchScreenKeyboard.hideInput = true;
+						kt = TouchScreenKeyboardType.Default;
+						val = "|";
+					}
+					else if (inputType == InputType.Password)
+					{
+						TouchScreenKeyboard.hideInput = false;
+						kt = TouchScreenKeyboardType.Default;
+						val = mValue;
+					}
+					else
+					{
+						TouchScreenKeyboard.hideInput = false;
+						kt = (TouchScreenKeyboardType)((int)keyboardType);
+						val = mValue;
+					}
+
+					mKeyboard = (inputType == InputType.Password) ?
+						TouchScreenKeyboard.Open(val, kt, false, false, true) :
+						TouchScreenKeyboard.Open(val, kt, inputType == InputType.AutoCorrect, label.multiLine, false, false, defaultText);
+				}
+				else
+#endif
+				{
+					Vector2 pos = (UICamera.current != null && UICamera.current.cachedCamera != null) ?
+						UICamera.current.cachedCamera.WorldToScreenPoint(label.worldCorners[0]) :
+						label.worldCorners[0];
+					pos.y = Screen.height - pos.y;
+					Input.imeCompositionMode = IMECompositionMode.On;
+					Input.compositionCursorPos = pos;
+
+					mSelectionStart = 0;
+					mSelectionEnd = string.IsNullOrEmpty(mValue) ? 0 : mValue.Length;
+					mDrawStart = 0;
+				}
+				UpdateLabel();
+			}
+#if MOBILE
+			if (mKeyboard != null)
+			{
+				string text = mKeyboard.text;
+
+				if (TouchScreenKeyboard.hideInput)
+				{
+					if (text != "|")
+					{
+						if (!string.IsNullOrEmpty(text))
+						{
+							Insert(text.Substring(1));
+						}
+						else DoBackspace();
+
+						mKeyboard.text = "|";
+					}
+				}
+				else if (mCached != text)
+				{
+					mCached = text;
+					value = text;
+				}
+
+				if (mKeyboard.done || !mKeyboard.active)
+				{
+					if (!mKeyboard.wasCanceled) Submit();
+					mKeyboard = null;
+					isSelected = false;
+					mCached = "";
 				}
 			}
-
-			// Append IME composition
-			if (mLastIME != Input.compositionString)
+			else
+#endif
 			{
-				mLastIME = Input.compositionString;
-				UpdateLabel();
-				ExecuteOnChange();
+				if (selectOnTab != null && Input.GetKeyDown(KeyCode.Tab))
+				{
+					UICamera.selectedObject = selectOnTab;
+					return;
+				}
+
+				string ime = Input.compositionString;
+
+				// There seems to be an inconsistency between IME on Windows, and IME on OSX.
+				// On Windows, Input.inputString is always empty while IME is active. On the OSX it is not.
+				if (string.IsNullOrEmpty(ime) && !string.IsNullOrEmpty(Input.inputString))
+				{
+					// Process input ignoring non-printable characters as they are not consistent.
+					// Windows has them, OSX may not. They get handled inside OnGUI() instead.
+					string s = Input.inputString;
+
+					for (int i = 0; i < s.Length; ++i)
+					{
+						char ch = s[i];
+						if (ch < ' ') continue;
+
+						// OSX inserts these characters for arrow keys
+						if (ch == '\uF700') continue;
+						if (ch == '\uF701') continue;
+						if (ch == '\uF702') continue;
+						if (ch == '\uF703') continue;
+
+						Insert(ch.ToString());
+					}
+				}
+
+				// Append IME composition
+				if (mLastIME != ime)
+				{
+					mSelectionEnd = string.IsNullOrEmpty(ime) ? mSelectionStart : mValue.Length + ime.Length;
+					mLastIME = ime;
+					UpdateLabel();
+					ExecuteOnChange();
+				}
 			}
 
 			// Blink the caret
@@ -517,6 +657,11 @@ public class UIInput : MonoBehaviour
 				mNextBlink = RealTime.time + 0.5f;
 				mCaret.enabled = !mCaret.enabled;
 			}
+
+			// If the label's final alpha changes, we need to update the drawn geometry,
+			// or the highlight widgets (which have their geometry set manually) won't update.
+			if (isSelected && mLastAlpha != label.finalAlpha)
+				UpdateLabel();
 		}
 	}
 
@@ -531,10 +676,27 @@ public class UIInput : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Perform a backspace operation.
+	/// </summary>
+
+	protected void DoBackspace ()
+	{
+		if (!string.IsNullOrEmpty(mValue))
+		{
+			if (mSelectionStart == mSelectionEnd)
+			{
+				if (mSelectionStart < 1) return;
+				--mSelectionEnd;
+			}
+			Insert("");
+		}
+	}
+
+	/// <summary>
 	/// Handle the specified event.
 	/// </summary>
 
-	bool ProcessEvent (Event ev)
+	protected virtual bool ProcessEvent (Event ev)
 	{
 		if (label == null) return false;
 
@@ -556,16 +718,7 @@ public class UIInput : MonoBehaviour
 			case KeyCode.Backspace:
 			{
 				ev.Use();
-
-				if (!string.IsNullOrEmpty(mValue))
-				{
-					if (mSelectionStart == mSelectionEnd)
-					{
-						if (mSelectionStart < 1) return true;
-						--mSelectionEnd;
-					}
-					Insert("");
-				}
+				DoBackspace();
 				return true;
 			}
 
@@ -702,6 +855,19 @@ public class UIInput : MonoBehaviour
 				return true;
 			}
 
+			// Select all
+			case KeyCode.A:
+			{
+				if (ctrl)
+				{
+					ev.Use();
+					mSelectionStart = 0;
+					mSelectionEnd = mValue.Length;
+					UpdateLabel();
+				}
+				return true;
+			}
+
 			// Copy
 			case KeyCode.C:
 			{
@@ -741,8 +907,14 @@ public class UIInput : MonoBehaviour
 			case KeyCode.KeypadEnter:
 			{
 				ev.Use();
-				
-				if (label.multiLine && !ctrl && label.overflowMethod != UILabel.Overflow.ClampContent)
+
+				bool newLine = (onReturnKey == OnReturnKey.NewLine) ||
+					(onReturnKey == OnReturnKey.Default &&
+					label.multiLine && !ctrl &&
+					label.overflowMethod != UILabel.Overflow.ClampContent &&
+					validation == Validation.None);
+
+				if (newLine)
 				{
 					Insert("\n");
 				}
@@ -853,7 +1025,7 @@ public class UIInput : MonoBehaviour
 		Ray ray = UICamera.currentRay;
 		Plane p = new Plane(corners[0], corners[1], corners[2]);
 		float dist;
-		return p.Raycast(ray, out dist) ? mDrawStart + label.GetCharacterIndex(ray.GetPoint(dist)) : 0;
+		return p.Raycast(ray, out dist) ? mDrawStart + label.GetCharacterIndexAtPosition(ray.GetPoint(dist)) : 0;
 	}
 
 	/// <summary>
@@ -862,12 +1034,13 @@ public class UIInput : MonoBehaviour
 
 	protected virtual void OnPress (bool isPressed)
 	{
-		if (isPressed && isSelected && label != null && UICamera.currentScheme == UICamera.ControlScheme.Mouse)
+		if (isPressed && isSelected && label != null &&
+			(UICamera.currentScheme == UICamera.ControlScheme.Mouse ||
+			 UICamera.currentScheme == UICamera.ControlScheme.Touch))
 		{
-			mSelectionEnd = GetCharUnderMouse();
+			selectionEnd = GetCharUnderMouse();
 			if (!Input.GetKey(KeyCode.LeftShift) &&
-				!Input.GetKey(KeyCode.RightShift)) mSelectionStart = mSelectionEnd;
-			UpdateLabel();
+				!Input.GetKey(KeyCode.RightShift)) selectionStart = mSelectionEnd;
 		}
 	}
 
@@ -877,10 +1050,11 @@ public class UIInput : MonoBehaviour
 
 	protected virtual void OnDrag (Vector2 delta)
 	{
-		if (label != null && UICamera.currentScheme == UICamera.ControlScheme.Mouse)
+		if (label != null &&
+			(UICamera.currentScheme == UICamera.ControlScheme.Mouse ||
+			 UICamera.currentScheme == UICamera.ControlScheme.Touch))
 		{
-			mSelectionEnd = GetCharUnderMouse();
-			UpdateLabel();
+			selectionEnd = GetCharUnderMouse();
 		}
 	}
 
@@ -896,17 +1070,8 @@ public class UIInput : MonoBehaviour
 
 	protected virtual void Cleanup ()
 	{
-		if (mHighlight)
-		{
-			NGUITools.Destroy(mHighlight.gameObject);
-			mHighlight = null;
-		}
-
-		if (mCaret)
-		{
-			NGUITools.Destroy(mCaret.gameObject);
-			mCaret = null;
-		}
+		if (mHighlight) mHighlight.enabled = false;
+		if (mCaret) mCaret.enabled = false;
 
 		if (mBlankTex)
 		{
@@ -914,7 +1079,6 @@ public class UIInput : MonoBehaviour
 			mBlankTex = null;
 		}
 	}
-#endif // !MOBILE
 
 	/// <summary>
 	/// Submit the input field's text.
@@ -924,11 +1088,15 @@ public class UIInput : MonoBehaviour
 	{
 		if (NGUITools.GetActive(this))
 		{
-			current = this;
 			mValue = value;
-			EventDelegate.Execute(onSubmit);
+
+			if (current == null)
+			{
+				current = this;
+				EventDelegate.Execute(onSubmit);
+				current = null;
+			}
 			SaveToPlayerPrefs(mValue);
-			current = null;
 		}
 	}
 
@@ -936,14 +1104,14 @@ public class UIInput : MonoBehaviour
 	/// Update the visual text label.
 	/// </summary>
 
-	protected void UpdateLabel ()
+	public void UpdateLabel ()
 	{
 		if (label != null)
 		{
 			if (mDoInit) Init();
 			bool selected = isSelected;
 			string fullText = value;
-			bool isEmpty = string.IsNullOrEmpty(fullText);
+			bool isEmpty = string.IsNullOrEmpty(fullText) && string.IsNullOrEmpty(Input.compositionString);
 			label.color = (isEmpty && !selected) ? mDefaultColor : activeTextColor;
 			string processed;
 
@@ -957,7 +1125,13 @@ public class UIInput : MonoBehaviour
 				if (inputType == InputType.Password)
 				{
 					processed = "";
-					for (int i = 0, imax = fullText.Length; i < imax; ++i) processed += "*";
+
+					string asterisk = "*";
+
+					if (label.bitmapFont != null && label.bitmapFont.bmFont != null &&
+						label.bitmapFont.bmFont.GetGlyph('*') == null) asterisk = "x";
+
+					for (int i = 0, imax = fullText.Length; i < imax; ++i) processed += asterisk;
 				}
 				else processed = fullText;
 
@@ -972,7 +1146,7 @@ public class UIInput : MonoBehaviour
 				processed = left + processed.Substring(selPos, processed.Length - selPos);
 
 				// Clamped content needs to be adjusted further
-				if (selected && label.overflowMethod == UILabel.Overflow.ClampContent)
+				if (selected && label.overflowMethod == UILabel.Overflow.ClampContent && label.maxLineCount == 1)
 				{
 					// Determine what will actually fit into the given line
 					int offset = label.CalculateOffsetToFit(processed);
@@ -1015,8 +1189,11 @@ public class UIInput : MonoBehaviour
 			}
 
 			label.text = processed;
-#if !MOBILE
+#if MOBILE
+			if (selected && (mKeyboard == null || TouchScreenKeyboard.hideInput))
+#else
 			if (selected)
+#endif
 			{
 				int start = mSelectionStart - mDrawStart;
 				int end = mSelectionEnd - mDrawStart;
@@ -1046,11 +1223,13 @@ public class UIInput : MonoBehaviour
 					else
 					{
 						mHighlight.pivot = label.pivot;
+						mHighlight.mainTexture = mBlankTex;
 						mHighlight.MarkAsChanged();
+						mHighlight.enabled = true;
 					}
 				}
 
-				// Create the caret
+				// Create the carter
 				if (mCaret == null)
 				{
 					mCaret = NGUITools.AddWidget<UITexture>(label.cachedGameObject);
@@ -1063,11 +1242,11 @@ public class UIInput : MonoBehaviour
 				else
 				{
 					mCaret.pivot = label.pivot;
+					mCaret.mainTexture = mBlankTex;
 					mCaret.MarkAsChanged();
 					mCaret.enabled = true;
 				}
 
-				// Fill the selection
 				if (start != end)
 				{
 					label.PrintOverlay(start, end, mCaret.geometry, mHighlight.geometry, caretColor, selectionColor);
@@ -1081,9 +1260,9 @@ public class UIInput : MonoBehaviour
 
 				// Reset the blinking time
 				mNextBlink = RealTime.time + 0.5f;
+				mLastAlpha = label.finalAlpha;
 			}
 			else Cleanup();
-#endif
 		}
 	}
 
@@ -1192,11 +1371,33 @@ public class UIInput : MonoBehaviour
 
 	protected void ExecuteOnChange ()
 	{
-		if (EventDelegate.IsValid(onChange))
+		if (current == null && EventDelegate.IsValid(onChange))
 		{
 			current = this;
 			EventDelegate.Execute(onChange);
 			current = null;
 		}
+	}
+
+	/// <summary>
+	/// Convenience function to be used as a callback that will clear the input field's focus.
+	/// </summary>
+
+	public void RemoveFocus () { isSelected = false; }
+
+	/// <summary>
+	/// Convenience function that can be used as a callback for On Change notification.
+	/// </summary>
+
+	public void SaveValue () { SaveToPlayerPrefs(mValue); }
+
+	/// <summary>
+	/// Convenience function that can forcefully reset the input field's value to what was saved earlier.
+	/// </summary>
+
+	public void LoadValue ()
+	{
+		if (!string.IsNullOrEmpty(savedAs) && PlayerPrefs.HasKey(savedAs))
+			value = PlayerPrefs.GetString(savedAs);
 	}
 }

@@ -73,43 +73,47 @@ public class UIWidget : UIRect
 
 	public float aspectRatio = 1f;
 
+	public delegate bool HitCheck (Vector3 worldPos);
+
+	/// <summary>
+	/// Custom hit check function. If set, all hit checks (including events) will call this function,
+	/// passing the world position. Return 'true' if it's within the bounds of your choice, 'false' otherwise.
+	/// </summary>
+
+	public HitCheck hitCheck;
+
 	/// <summary>
 	/// Panel that's managing this widget.
 	/// </summary>
 
-	[System.NonSerialized]
-	public UIPanel panel;
+	[System.NonSerialized] public UIPanel panel;
 
 	/// <summary>
 	/// Widget's generated geometry.
 	/// </summary>
 
-	[System.NonSerialized]
-	public UIGeometry geometry = new UIGeometry();
+	[System.NonSerialized] public UIGeometry geometry = new UIGeometry();
 
 	/// <summary>
 	/// If set to 'false', the widget's OnFill function will not be called, letting you define custom geometry at will.
 	/// </summary>
 
-	[System.NonSerialized]
-	public bool fillGeometry = true;
-	
-	protected bool mPlayMode = true;
-	protected Vector4 mDrawRegion = new Vector4(0f, 0f, 1f, 1f);
-
-	Matrix4x4 mLocalToPanel;
-	bool mIsVisible = true;
-	bool mIsInFront = true;
-	float mLastAlpha = 0f;
-	bool mMoved = false;
+	[System.NonSerialized] public bool fillGeometry = true;
+	[System.NonSerialized] protected bool mPlayMode = true;
+	[System.NonSerialized] protected Vector4 mDrawRegion = new Vector4(0f, 0f, 1f, 1f);
+	[System.NonSerialized] Matrix4x4 mLocalToPanel;
+	[System.NonSerialized] bool mIsVisibleByAlpha = true;
+	[System.NonSerialized] bool mIsVisibleByPanel = true;
+	[System.NonSerialized] bool mIsInFront = true;
+	[System.NonSerialized] float mLastAlpha = 0f;
+	[System.NonSerialized] bool mMoved = false;
 
 	/// <summary>
 	/// Internal usage -- draw call that's drawing the widget.
 	/// </summary>
 
-	[HideInInspector][System.NonSerialized] public UIDrawCall drawCall;
-
-	protected Vector3[] mCorners = new Vector3[4];
+	[System.NonSerialized] public UIDrawCall drawCall;
+	[System.NonSerialized] protected Vector3[] mCorners = new Vector3[4];
 
 	/// <summary>
 	/// Draw region alters how the widget looks without modifying the widget's rectangle.
@@ -158,16 +162,32 @@ public class UIWidget : UIRect
 
 			if (mWidth != value && keepAspectRatio != AspectRatioSource.BasedOnHeight)
 			{
-				mWidth = value;
-
-				if (keepAspectRatio == AspectRatioSource.BasedOnWidth)
-					mHeight = Mathf.RoundToInt(mWidth / aspectRatio);
-				else if (keepAspectRatio == AspectRatioSource.Free)
-					aspectRatio = mWidth / (float)mHeight;
-
-				mMoved = true;
-				if (autoResizeBoxCollider) ResizeCollider();
-				MarkAsChanged();
+				if (isAnchoredHorizontally)
+				{
+					if (leftAnchor.target != null && rightAnchor.target != null)
+					{
+						if (mPivot == Pivot.BottomLeft || mPivot == Pivot.Left || mPivot == Pivot.TopLeft)
+						{
+							NGUIMath.AdjustWidget(this, 0f, 0f, value - mWidth, 0f);
+						}
+						else if (mPivot == Pivot.BottomRight || mPivot == Pivot.Right || mPivot == Pivot.TopRight)
+						{
+							NGUIMath.AdjustWidget(this, mWidth - value, 0f, 0f, 0f);
+						}
+						else
+						{
+							int diff = value - mWidth;
+							diff = diff - (diff & 1);
+							if (diff != 0) NGUIMath.AdjustWidget(this, -diff * 0.5f, 0f, diff * 0.5f, 0f);
+						}
+					}
+					else if (leftAnchor.target != null)
+					{
+						NGUIMath.AdjustWidget(this, 0f, 0f, value - mWidth, 0f);
+					}
+					else NGUIMath.AdjustWidget(this, mWidth - value, 0f, 0f, 0f);
+				}
+				else SetDimensions(value, mHeight);
 			}
 		}
 	}
@@ -189,16 +209,32 @@ public class UIWidget : UIRect
 
 			if (mHeight != value && keepAspectRatio != AspectRatioSource.BasedOnWidth)
 			{
-				mHeight = value;
-
-				if (keepAspectRatio == AspectRatioSource.BasedOnHeight)
-					mWidth = Mathf.RoundToInt(mHeight * aspectRatio);
-				else if (keepAspectRatio == AspectRatioSource.Free)
-					aspectRatio = mWidth / (float)mHeight;
-
-				mMoved = true;
-				if (autoResizeBoxCollider) ResizeCollider();
-				MarkAsChanged();
+				if (isAnchoredVertically)
+				{
+					if (bottomAnchor.target != null && topAnchor.target != null)
+					{
+						if (mPivot == Pivot.BottomLeft || mPivot == Pivot.Bottom || mPivot == Pivot.BottomRight)
+						{
+							NGUIMath.AdjustWidget(this, 0f, 0f, 0f, value - mHeight);
+						}
+						else if (mPivot == Pivot.TopLeft || mPivot == Pivot.Top || mPivot == Pivot.TopRight)
+						{
+							NGUIMath.AdjustWidget(this, 0f, mHeight - value, 0f, 0f);
+						}
+						else
+						{
+							int diff = value - mHeight;
+							diff = diff - (diff & 1);
+							if (diff != 0) NGUIMath.AdjustWidget(this, 0f, -diff * 0.5f, 0f, diff * 0.5f);
+						}
+					}
+					else if (bottomAnchor.target != null)
+					{
+						NGUIMath.AdjustWidget(this, 0f, 0f, 0f, value - mHeight);
+					}
+					else NGUIMath.AdjustWidget(this, 0f, mHeight - value, 0f, 0f);
+				}
+				else SetDimensions(mWidth, value);
 			}
 		}
 	}
@@ -219,7 +255,6 @@ public class UIWidget : UIRect
 			{
 				bool alphaChange = (mColor.a != value.a);
 				mColor = value;
-				UpdateFinalAlpha(Time.frameCount);
 				Invalidate(alphaChange);
 			}
 		}
@@ -240,7 +275,6 @@ public class UIWidget : UIRect
 			if (mColor.a != value)
 			{
 				mColor.a = value;
-				UpdateFinalAlpha(Time.frameCount);
 				Invalidate(true);
 			}
 		}
@@ -250,7 +284,7 @@ public class UIWidget : UIRect
 	/// Whether the widget is currently visible.
 	/// </summary>
 
-	public bool isVisible { get { return mIsVisible && mIsInFront && finalAlpha > 0.001f; } }
+	public bool isVisible { get { return mIsVisibleByPanel && mIsVisibleByAlpha && mIsInFront && finalAlpha > 0.001f && NGUITools.GetActive(this); } }
 
 	/// <summary>
 	/// Whether the widget has vertices to draw.
@@ -344,7 +378,7 @@ public class UIWidget : UIRect
 					}
 				}
 #if UNITY_EDITOR
-				UnityEditor.EditorUtility.SetDirty(this);
+				NGUITools.SetDirty(this);
 #endif
 			}
 		}
@@ -402,6 +436,19 @@ public class UIWidget : UIRect
 	}
 
 	/// <summary>
+	/// Widget's center in local coordinates. Don't forget to transform by the widget's transform.
+	/// </summary>
+
+	public Vector3 localCenter
+	{
+		get
+		{
+			Vector3[] cr = localCorners;
+			return Vector3.Lerp(cr[0], cr[2], 0.5f);
+		}
+	}
+
+	/// <summary>
 	/// World-space corners of the widget. The order is bottom-left, top-left, top-right, bottom-right.
 	/// </summary>
 
@@ -426,6 +473,12 @@ public class UIWidget : UIRect
 			return mCorners;
 		}
 	}
+
+	/// <summary>
+	/// World-space center of the widget.
+	/// </summary>
+
+	public Vector3 worldCenter { get { return cachedTransform.TransformPoint(localCenter); } }
 
 	/// <summary>
 	/// Local space region where the actual drawing will take place.
@@ -517,7 +570,36 @@ public class UIWidget : UIRect
 		get
 		{
 			BoxCollider box = collider as BoxCollider;
-			return (box != null);
+			if (box != null) return true;
+#if !UNITY_4_0 && !UNITY_4_1 && !UNITY_4_2
+			return GetComponent<BoxCollider2D>() != null;
+#else
+            return false;
+#endif
+		}
+	}
+
+	/// <summary>
+	/// Adjust the widget's dimensions without going through the anchor validation logic.
+	/// </summary>
+
+	public void SetDimensions (int w, int h)
+	{
+		if (mWidth != w || mHeight != h)
+		{
+			mWidth = w;
+			mHeight = h;
+
+			if (keepAspectRatio == AspectRatioSource.BasedOnWidth)
+				mHeight = Mathf.RoundToInt(mWidth / aspectRatio);
+			else if (keepAspectRatio == AspectRatioSource.BasedOnHeight)
+				mWidth = Mathf.RoundToInt(mHeight * aspectRatio);
+			else if (keepAspectRatio == AspectRatioSource.Free)
+				aspectRatio = mWidth / (float)mHeight;
+
+			mMoved = true;
+			if (autoResizeBoxCollider) ResizeCollider();
+			MarkAsChanged();
 		}
 	}
 
@@ -551,7 +633,7 @@ public class UIWidget : UIRect
 		return mCorners;
 	}
 
-	int mAlphaFrameID = -1;
+	[System.NonSerialized] int mAlphaFrameID = -1;
 
 	/// <summary>
 	/// Widget's final alpha, after taking the panel's alpha into account.
@@ -559,7 +641,11 @@ public class UIWidget : UIRect
 
 	public override float CalculateFinalAlpha (int frameID)
 	{
+#if UNITY_EDITOR
+		if (mAlphaFrameID != frameID || !Application.isPlaying)
+#else
 		if (mAlphaFrameID != frameID)
+#endif
 		{
 			mAlphaFrameID = frameID;
 			UpdateFinalAlpha(frameID);
@@ -573,7 +659,7 @@ public class UIWidget : UIRect
 
 	protected void UpdateFinalAlpha (int frameID)
 	{
-		if (!mIsVisible || !mIsInFront)
+		if (!mIsVisibleByAlpha || !mIsInFront)
 		{
 			finalAlpha = 0f;
 		}
@@ -581,6 +667,24 @@ public class UIWidget : UIRect
 		{
 			UIRect pt = parent;
 			finalAlpha = (parent != null) ? pt.CalculateFinalAlpha(frameID) * mColor.a : mColor.a;
+		}
+	}
+
+	/// <summary>
+	/// Update the widget's visibility and final alpha.
+	/// </summary>
+
+	public override void Invalidate (bool includeChildren)
+	{
+		mChanged = true;
+		mAlphaFrameID = -1;
+
+		if (panel != null)
+		{
+			bool vis = (hideIfOffScreen || panel.hasCumulativeClipping) ? panel.IsVisible(this) : true;
+			UpdateVisibility(CalculateCumulativeAlpha(Time.frameCount) > 0.001f, vis);
+			UpdateFinalAlpha(Time.frameCount);
+			if (includeChildren) base.Invalidate(true);
 		}
 	}
 
@@ -598,7 +702,7 @@ public class UIWidget : UIRect
 	/// Set the widget's rectangle.
 	/// </summary>
 
-	public void SetRect (float x, float y, float width, float height)
+	public override void SetRect (float x, float y, float width, float height)
 	{
 		Vector2 po = pivotOffset;
 
@@ -620,8 +724,8 @@ public class UIWidget : UIRect
 		if (finalHeight < minHeight) finalHeight = minHeight;
 
 		t.localPosition = pos;
-		width = finalWidth;
-		height = finalHeight;
+		this.width = finalWidth;
+		this.height = finalHeight;
 
 		if (isAnchored)
 		{
@@ -632,7 +736,7 @@ public class UIWidget : UIRect
 			if (bottomAnchor.target) bottomAnchor.SetVertical(t, y);
 			if (topAnchor.target) topAnchor.SetVertical(t, y + height);
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			NGUITools.SetDirty(this);
 #endif
 		}
 	}
@@ -641,14 +745,7 @@ public class UIWidget : UIRect
 	/// Adjust the widget's collider size to match the widget's dimensions.
 	/// </summary>
 
-	public void ResizeCollider ()
-	{
-		if (NGUITools.GetActive(this))
-		{
-			BoxCollider box = collider as BoxCollider;
-			if (box != null) NGUITools.UpdateWidgetCollider(box, true);
-		}
-	}
+	public void ResizeCollider () { if (NGUITools.GetActive(this)) NGUITools.UpdateWidgetCollider(gameObject); }
 
 	/// <summary>
 	/// Static widget comparison function used for depth sorting.
@@ -746,8 +843,8 @@ public class UIWidget : UIRect
 	}
 
 #if UNITY_EDITOR
-	Texture mOldTex;
-	Shader mOldShader;
+	[System.NonSerialized] Texture mOldTex;
+	[System.NonSerialized] Shader mOldShader;
 
 	/// <summary>
 	/// This callback is sent inside the editor notifying us that some property has changed.
@@ -755,10 +852,10 @@ public class UIWidget : UIRect
 
 	protected override void OnValidate()
 	{
-		base.OnValidate();
-
 		if (NGUITools.GetActive(this))
 		{
+			base.OnValidate();
+
 			// Prior to NGUI 2.7.0 width and height was specified as transform's local scale
 			if ((mWidth == 100 || mWidth == minWidth) &&
 				(mHeight == 100 || mHeight == minHeight) && cachedTransform.localScale.magnitude > 8f)
@@ -787,6 +884,14 @@ public class UIWidget : UIRect
 			aspectRatio = (keepAspectRatio == AspectRatioSource.Free) ?
 				(float)mWidth / mHeight : Mathf.Max(0.01f, aspectRatio);
 
+			if (keepAspectRatio == AspectRatioSource.BasedOnHeight)
+			{
+				mWidth = Mathf.RoundToInt(mHeight * aspectRatio);
+			}
+			else if (keepAspectRatio == AspectRatioSource.BasedOnWidth)
+			{
+				mHeight = Mathf.RoundToInt(mWidth / aspectRatio);
+			}
 			CreatePanel();
 		}
 		else
@@ -803,20 +908,22 @@ public class UIWidget : UIRect
 
 	public virtual void MarkAsChanged ()
 	{
-		if (this == null) return;
-		mChanged = true;
-#if UNITY_EDITOR
-		UnityEditor.EditorUtility.SetDirty(this);
-#endif
-		// If we're in the editor, update the panel right away so its geometry gets updated.
-		if (panel != null && enabled && NGUITools.GetActive(gameObject) && !mPlayMode)
+		if (NGUITools.GetActive(this))
 		{
-			SetDirty();
-			CheckLayer();
+			mChanged = true;
 #if UNITY_EDITOR
-			// Mark the panel as dirty so it gets updated
-			if (material != null) UnityEditor.EditorUtility.SetDirty(panel.gameObject);
+			NGUITools.SetDirty(this);
 #endif
+			// If we're in the editor, update the panel right away so its geometry gets updated.
+			if (panel != null && enabled && NGUITools.GetActive(gameObject) && !mPlayMode)
+			{
+				SetDirty();
+				CheckLayer();
+#if UNITY_EDITOR
+				// Mark the panel as dirty so it gets updated
+				if (material != null) NGUITools.SetDirty(panel.gameObject);
+#endif
+			}
 		}
 	}
 
@@ -901,7 +1008,7 @@ public class UIWidget : UIRect
 			UpgradeFrom265();
 			cachedTransform.localScale = Vector3.one;
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			NGUITools.SetDirty(this);
 #endif
 		}
 		Update();
@@ -916,15 +1023,27 @@ public class UIWidget : UIRect
 		Vector3 scale = cachedTransform.localScale;
 		mWidth = Mathf.Abs(Mathf.RoundToInt(scale.x));
 		mHeight = Mathf.Abs(Mathf.RoundToInt(scale.y));
-		if (GetComponent<BoxCollider>() != null)
-			NGUITools.AddWidgetCollider(gameObject, true);
+		NGUITools.UpdateWidgetCollider(gameObject, true);
 	}
 
 	/// <summary>
 	/// Virtual Start() functionality for widgets.
 	/// </summary>
 
-	protected override void OnStart () { CreatePanel(); }
+	protected override void OnStart ()
+	{
+#if UNITY_EDITOR
+		if (GetComponent<UIPanel>() != null)
+		{
+			Debug.LogError("Widgets and panels should not be on the same object! Widget must be a child of the panel.", this);
+		}
+		else if (!Application.isPlaying && GetComponents<UIWidget>().Length > 1)
+		{
+			Debug.LogError("You should not place more than one widget on the same object. Weird stuff will happen!", this);
+		}
+#endif
+		CreatePanel();
+	}
 
 	/// <summary>
 	/// Update the anchored edges and ensure the widget is registered with a panel.
@@ -1081,11 +1200,13 @@ public class UIWidget : UIRect
 #endif
 	}
 
+#if !UNITY_EDITOR
 	/// <summary>
 	/// Mark the UI as changed when returning from paused state.
 	/// </summary>
 
 	void OnApplicationPause (bool paused) { if (!paused) MarkAsChanged(); }
+#endif
 
 	/// <summary>
 	/// Clear references.
@@ -1160,7 +1281,7 @@ public class UIWidget : UIRect
 
 			Color outline = new Color(1f, 1f, 1f, 0.2f);
 
-			float adjustment = (root != null) ? 0.25f : 0.001f;
+			float adjustment = (root != null) ? 0.05f : 0.001f;
 			Vector2 offset = pivotOffset;
 			Vector3 center = new Vector3(mWidth * (0.5f - offset.x), mHeight * (0.5f - offset.y), -mDepth * adjustment);
 			Vector3 size = new Vector3(mWidth, mHeight, 1f);
@@ -1182,12 +1303,13 @@ public class UIWidget : UIRect
 	/// Update the widget's visibility state.
 	/// </summary>
 
-	public bool UpdateVisibility (bool visible)
+	public bool UpdateVisibility (bool visibleByAlpha, bool visibleByPanel)
 	{
-		if (mIsVisible != visible)
+		if (mIsVisibleByAlpha != visibleByAlpha || mIsVisibleByPanel != visibleByPanel)
 		{
 			mChanged = true;
-			mIsVisible = visible;
+			mIsVisibleByAlpha = visibleByAlpha;
+			mIsVisibleByPanel = visibleByPanel;
 			return true;
 		}
 		return false;
@@ -1251,9 +1373,9 @@ public class UIWidget : UIRect
 	}
 
 #if UNITY_3_5 || UNITY_4_0
-	Vector3 mOldPos;
-	Quaternion mOldRot;
-	Vector3 mOldScale;
+	[System.NonSerialized] Vector3 mOldPos;
+	[System.NonSerialized] Quaternion mOldRot;
+	[System.NonSerialized] Vector3 mOldScale;
 
 	/// <summary>
 	/// Whether the transform has changed since the last time it was checked.
@@ -1282,14 +1404,14 @@ public class UIWidget : UIRect
 	{
 		// Has the alpha changed?
 		float finalAlpha = CalculateFinalAlpha(frame);
-		if (mIsVisible && mLastAlpha != finalAlpha) mChanged = true;
+		if (mIsVisibleByAlpha && mLastAlpha != finalAlpha) mChanged = true;
 		mLastAlpha = finalAlpha;
 
 		if (mChanged)
 		{
 			mChanged = false;
 
-			if (mIsVisible && finalAlpha > 0.001f && shader != null)
+			if (mIsVisibleByAlpha && finalAlpha > 0.001f && shader != null)
 			{
 				bool hadVertices = geometry.hasVertices;
 
@@ -1378,7 +1500,7 @@ public class UIWidget : UIRect
 	/// Dimensions of the sprite's border, if any.
 	/// </summary>
 
-	virtual public Vector4 border { get { return Vector4.zero; } }
+	virtual public Vector4 border { get { return Vector4.zero; } set { } }
 
 	/// <summary>
 	/// Virtual function called by the UIPanel that fills the buffers.

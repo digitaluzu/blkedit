@@ -171,10 +171,34 @@ public class NGUISettings
 
 #region Convenience accessor properties
 
+	static public bool minimalisticLook
+	{
+		get { return GetBool("NGUI Minimalistic", false); }
+		set { SetBool("NGUI Minimalistic", value); }
+	}
+
+	static public bool unifiedTransform
+	{
+		get { return GetBool("NGUI Unified", false); }
+		set { SetBool("NGUI Unified", value); }
+	}
+
 	static public Color color
 	{
 		get { return GetColor("NGUI Color", Color.white); }
 		set { SetColor("NGUI Color", value); }
+	}
+
+	static public Color foregroundColor
+	{
+		get { return GetColor("NGUI FG Color", Color.white); }
+		set { SetColor("NGUI FG Color", value); }
+	}
+
+	static public Color backgroundColor
+	{
+		get { return GetColor("NGUI BG Color", Color.black); }
+		set { SetColor("NGUI BG Color", value); }
 	}
 
 	static public ColorMode colorMode
@@ -223,13 +247,11 @@ public class NGUISettings
 		set { Set("NGUI Texture", value); }
 	}
 
-#if !UNITY_3_5 && !UNITY_4_0 && !UNITY_4_1 && !UNITY_4_2
 	static public Sprite sprite2D
 	{
 		get { return Get<Sprite>("NGUI Sprite2D", null); }
 		set { Set("NGUI Sprite2D", value); }
 	}
-#endif
 
 	static public string selectedSprite
 	{
@@ -280,6 +302,12 @@ public class NGUISettings
 	{
 		get { return GetEnum("NGUI Font Style", FontStyle.Normal); }
 		set { SetEnum("NGUI Font Style", value); }
+	}
+
+	static public Font dynamicFont
+	{
+		get { return Get<Font>("NGUI Dynamic Font", null); }
+		set { Set("NGUI Dynamic Font", value); }
 	}
 
 	static public UILabel.Overflow overflowStyle
@@ -340,6 +368,36 @@ public class NGUISettings
 	{
 		get { return GetBool("NGUI Guides", false); }
 		set { SetBool("NGUI Guides", value); }
+	}
+
+	static public string charsToInclude
+	{
+		get { return GetString("NGUI Chars", ""); }
+		set { SetString("NGUI Chars", value); }
+	}
+
+	static public string pathToFreeType
+	{
+		get
+		{
+			string path = Application.dataPath;
+			if (Application.platform == RuntimePlatform.WindowsEditor) path += "/NGUI/Editor/FreeType.dll";
+			else path += "/NGUI/Editor/FreeType.dylib";
+			return GetString("NGUI FreeType", path);
+		}
+		set { SetString("NGUI FreeType", value); }
+	}
+
+	static public string searchField
+	{
+		get { return GetString("NGUI Search", null); }
+		set { SetString("NGUI Search", value); }
+	}
+
+	static public string currentPath
+	{
+		get { return GetString("NGUI Path", "Assets/"); }
+		set { SetString("NGUI Path", value); }
 	}
 #endregion
 

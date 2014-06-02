@@ -50,13 +50,20 @@ public class UIScrollBar : UISlider
 				mSize = val;
 				mIsDirty = true;
 
-				if (onChange != null)
+				if (NGUITools.GetActive(this))
 				{
-					current = this;
-					EventDelegate.Execute(onChange);
-					current = null;
+					if (current == null && onChange != null)
+					{
+						current = this;
+						EventDelegate.Execute(onChange);
+						current = null;
+					}
+					ForceUpdate();
+#if UNITY_EDITOR
+					if (!Application.isPlaying)
+						NGUITools.SetDirty(this);
+#endif
 				}
-				if (!Application.isPlaying) ForceUpdate();
 			}
 		}
 	}
@@ -81,7 +88,7 @@ public class UIScrollBar : UISlider
 			}
 			mDir = Direction.Upgraded;
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			NGUITools.SetDirty(this);
 #endif
 		}
 	}
@@ -94,8 +101,11 @@ public class UIScrollBar : UISlider
 	{
 		base.OnStart();
 
-		if (mFG != null && mFG.collider != null && mFG.gameObject != gameObject)
+		if (mFG != null && mFG.gameObject != gameObject)
 		{
+			bool hasCollider = (mFG.collider != null) || (mFG.GetComponent<Collider2D>() != null);
+			if (!hasCollider) return;
+
 			UIEventListener fgl = UIEventListener.Get(mFG.gameObject);
 			fgl.onPress += OnPressForeground;
 			fgl.onDrag += OnDragForeground;

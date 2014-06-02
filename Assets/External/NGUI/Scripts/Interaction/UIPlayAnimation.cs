@@ -3,9 +3,13 @@
 // Copyright © 2011-2014 Tasharen Entertainment
 //----------------------------------------------
 
+#if !UNITY_3_5 && !UNITY_4_0 && !UNITY_4_1 && !UNITY_4_2
+#define USE_MECANIM
+#endif
+
 using UnityEngine;
-using AnimationOrTween;
 using System.Collections.Generic;
+using AnimationOrTween;
 
 /// <summary>
 /// Play the specified animation on click.
@@ -15,12 +19,21 @@ using System.Collections.Generic;
 [AddComponentMenu("NGUI/Interaction/Play Animation")]
 public class UIPlayAnimation : MonoBehaviour
 {
+	static public UIPlayAnimation current = null;
+
 	/// <summary>
 	/// Target animation to activate.
 	/// </summary>
 
 	public Animation target;
 
+#if USE_MECANIM
+	/// <summary>
+	/// Target animator system.
+	/// </summary>
+
+	public Animator animator;
+#endif
 	/// <summary>
 	/// Optional clip name, if the animation has more than one clip.
 	/// </summary>
@@ -90,22 +103,49 @@ public class UIPlayAnimation : MonoBehaviour
 			eventReceiver = null;
 			callWhenFinished = null;
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			NGUITools.SetDirty(this);
 #endif
 		}
 	}
+
+	/// <summary>
+	/// Automatically find the necessary components.
+	/// </summary>
 
 	void Start ()
 	{
 		mStarted = true;
 
+#if USE_MECANIM
+		// Automatically try to find the animator
+		if (target == null && animator == null)
+		{
+			animator = GetComponentInChildren<Animator>();
+#if UNITY_EDITOR
+			if (animator != null) NGUITools.SetDirty(this);
+#endif
+		}
+
+		if (animator != null)
+		{
+			// Ensure that the animator is disabled as we will be sampling it manually
+			if (animator.enabled) animator.enabled = false;
+
+			// Don't continue since we already have an animator to work with
+			return;
+		}
+#endif // USE_MECANIM
+
 		if (target == null)
 		{
 			target = GetComponentInChildren<Animation>();
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			if (target != null) NGUITools.SetDirty(this);
 #endif
 		}
+
+		if (target != null && target.enabled)
+			target.enabled = false;
 	}
 
 	void OnEnable ()
@@ -123,6 +163,18 @@ public class UIPlayAnimation : MonoBehaviour
 			if (trigger == Trigger.OnHover || trigger == Trigger.OnHoverTrue)
 				mActivated = (UICamera.currentTouch.current == gameObject);
 		}
+
+		UIToggle toggle = GetComponent<UIToggle>();
+		if (toggle != null) EventDelegate.Add(toggle.onChange, OnToggle);
+	}
+
+	void OnDisable ()
+	{
+#if UNITY_EDITOR
+		if (!Application.isPlaying) return;
+#endif
+		UIToggle toggle = GetComponent<UIToggle>();
+		if (toggle != null) EventDelegate.Remove(toggle.onChange, OnToggle);
 	}
 
 	void OnHover (bool isOver)
@@ -156,13 +208,13 @@ public class UIPlayAnimation : MonoBehaviour
 			Play(isSelected, dualState);
 	}
 
-	void OnActivate (bool isActive)
+	void OnToggle ()
 	{
-		if (!enabled) return;
+		if (!enabled || UIToggle.current == null) return;
 		if (trigger == Trigger.OnActivate ||
-			(trigger == Trigger.OnActivateTrue && isActive) ||
-			(trigger == Trigger.OnActivateFalse && !isActive))
-			Play(isActive, dualState);
+			(trigger == Trigger.OnActivateTrue && UIToggle.current.value) ||
+			(trigger == Trigger.OnActivateFalse && !UIToggle.current.value))
+			Play(UIToggle.current.value, dualState);
 	}
 
 	void OnDragOver ()
@@ -198,7 +250,11 @@ public class UIPlayAnimation : MonoBehaviour
 
 	public void Play (bool forward, bool onlyIfDifferent)
 	{
+#if USE_MECANIM
+		if (target || animator)
+#else
 		if (target)
+#endif
 		{
 			if (onlyIfDifferent)
 			{
@@ -211,7 +267,13 @@ public class UIPlayAnimation : MonoBehaviour
 
 			int pd = -(int)playDirection;
 			Direction dir = forward ? playDirection : ((Direction)pd);
+#if USE_MECANIM
+			ActiveAnimation anim = target ?
+				ActiveAnimation.Play(target, clipName, dir, ifDisabledOnPlay, disableWhenFinished) :
+				ActiveAnimation.Play(animator, clipName, dir, ifDisabledOnPlay, disableWhenFinished);
+#else
 			ActiveAnimation anim = ActiveAnimation.Play(target, clipName, dir, ifDisabledOnPlay, disableWhenFinished);
+#endif
 
 			if (anim != null)
 			{
@@ -228,12 +290,17 @@ public class UIPlayAnimation : MonoBehaviour
 
 	void OnFinished ()
 	{
-		EventDelegate.Execute(onFinished);
+		if (current == null)
+		{
+			current = this;
+			EventDelegate.Execute(onFinished);
 
-		// Legacy functionality
-		if (eventReceiver != null && !string.IsNullOrEmpty(callWhenFinished))
-			eventReceiver.SendMessage(callWhenFinished, SendMessageOptions.DontRequireReceiver);
+			// Legacy functionality
+			if (eventReceiver != null && !string.IsNullOrEmpty(callWhenFinished))
+				eventReceiver.SendMessage(callWhenFinished, SendMessageOptions.DontRequireReceiver);
 
-		eventReceiver = null;
+			eventReceiver = null;
+			current = null;
+		}
 	}
 }

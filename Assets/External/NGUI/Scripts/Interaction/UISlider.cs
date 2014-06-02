@@ -22,7 +22,7 @@ public class UISlider : UIProgressBar
 	}
 
 	// Deprecated functionality. Use 'foregroundWidget' instead.
-	[HideInInspector][SerializeField] Transform foreground;
+	[HideInInspector][SerializeField] Transform foreground = null;
 
 	// Deprecated functionality
 	[HideInInspector][SerializeField] float rawValue = 1f; // Use 'value'
@@ -58,7 +58,7 @@ public class UISlider : UIProgressBar
 			}
 			direction = Direction.Upgraded;
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			NGUITools.SetDirty(this);
 #endif
 		}
 	}
@@ -69,12 +69,12 @@ public class UISlider : UIProgressBar
 
 	protected override void OnStart ()
 	{
-		GameObject bg = (mBG != null && mBG.collider != null) ? mBG.gameObject : gameObject;
+		GameObject bg = (mBG != null && (mBG.collider != null || mBG.GetComponent<Collider2D>() != null)) ? mBG.gameObject : gameObject;
 		UIEventListener bgl = UIEventListener.Get(bg);
 		bgl.onPress += OnPressBackground;
 		bgl.onDrag += OnDragBackground;
 
-		if (thumb != null && thumb.collider != null && (mFG == null || thumb != mFG.cachedTransform))
+		if (thumb != null && (thumb.collider != null || thumb.GetComponent<Collider2D>() != null) && (mFG == null || thumb != mFG.cachedTransform))
 		{
 			UIEventListener fgl = UIEventListener.Get(thumb.gameObject);
 			fgl.onPress += OnPressForeground;
