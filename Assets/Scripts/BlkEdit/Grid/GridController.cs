@@ -34,13 +34,29 @@ namespace Blk
 			// TODO: temp
 			if ((Main.PanelMgr.CurrentPanel as UiPanelMain).CurrentMode == UiPanelMain.Mode.Add) {
 				Color32 color = Main.ColorPicker.ActiveColor;
-				CommandInterface cmd = new AddBlockCommand (_grid, coord, color);
-				Main.CommandMgr.DoCommand (cmd);
+
+				// Only process if there is not already an entry at this coordinate,
+				// or the color of the coordinate will actually change.
+				if (!_grid.IsSet (coord) || !IsSameColor (_grid.GetColor (coord), color)) {
+					CommandInterface cmd = new AddBlockCommand (_grid, coord, color);
+					Main.CommandMgr.DoCommand (cmd);
+				}
 			}
 			else {
-				CommandInterface cmd = new EraseBlockCommand (_grid, coord);
-				Main.CommandMgr.DoCommand (cmd);
+				// Only process if there is an existing entry at this coord.
+				if (_grid.IsSet (coord)) {
+					CommandInterface cmd = new EraseBlockCommand (_grid, coord);
+					Main.CommandMgr.DoCommand (cmd);
+				}
 			}
+		}
+
+		private bool IsSameColor (Color32 c0, Color32 c1)
+		{
+			return c0.r == c1.r &&
+				c0.g == c1.g &&
+				c0.b == c1.b &&
+				c0.a == c1.a;
 		}
 
 		private Uzu.VectorI2 ScreenPosToCoord (Vector3 screenPos)
