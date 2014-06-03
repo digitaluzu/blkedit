@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Blk
 {
-	public class GridCell : Uzu.PooledBehaviour
+	public class GridCell : Uzu.BaseBehaviour
 	{
 		public UISprite Sprite {
 			get { return _sprite; }

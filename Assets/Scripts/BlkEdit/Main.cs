@@ -15,10 +15,6 @@ namespace Blk
 			get { return _instance._colorPicker; }
 		}
 
-		public static Uzu.GameObjectPool GridCellPool {
-			get { return _instance._gridCellPool; }
-		}
-
 		public static Uzu.UiPanelMgr PanelMgr {
 			get { return _instance._panelMgr; }
 		}
@@ -89,8 +85,6 @@ namespace Blk
 
 		[SerializeField]
 		private ColorPicker _colorPicker;
-		[SerializeField]
-		private Uzu.GameObjectPool _gridCellPool;
 		[SerializeField]
 		private SpinWithMouse _spinRegion;
 		[SerializeField]

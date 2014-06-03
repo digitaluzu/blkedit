@@ -67,6 +67,8 @@ namespace Blk
 		}
 
 		#region Implementation.
+		[SerializeField]
+		private GameObject _gridCellPrefab;
 		private GridLayer _currentLayer;
 		private Uzu.FixedList <GridCell> _cells;
 
@@ -105,7 +107,11 @@ namespace Blk
 						Uzu.VectorI2 coord = new Uzu.VectorI2 (x, y);
 
 						Vector3 pos = Uzu.Math.Vector2ToVector3 (coord * cellSize) - gridPivotOffset;
-						GameObject go = Main.GridCellPool.Spawn (pos);
+						GameObject go = (GameObject)GameObject.Instantiate (_gridCellPrefab);
+						Transform xform = go.transform;
+						xform.parent = CachedXform;
+						xform.localScale = Vector3.one;
+						xform.localPosition = pos;
 						GridCell cell = go.GetComponent <GridCell> ();
 
 						UISprite sprite = cell.Sprite;
