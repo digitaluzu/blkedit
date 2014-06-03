@@ -5,6 +5,32 @@ namespace Blk
 {
 	public class GridController : Uzu.BaseBehaviour
 	{
+		public void RebuildGrid (Uzu.BlockFormat.Data data)
+		{
+			Uzu.VectorI2 xy = Constants.GRID_DIMENSIONS;
+
+			if (Uzu.VectorI2.ElementProduct (xy) != data._states.Length) {
+				Debug.LogError ("Invalid BlockFormat.Data! Size does not match chunk size.");
+				return;
+			}
+
+			int cnt = 0;
+			for (int x = 0; x < xy.x; x++) {
+				for (int y = 0; y < xy.y; y++) {
+					Uzu.VectorI2 coord = new Uzu.VectorI2 (x, y);
+					if (data._states [cnt]) {
+						_grid.SetColor (coord, data._colors [cnt].ToColor32 ());
+					}
+					else {
+						_grid.Unset (coord);
+					}
+
+					cnt++;
+				}
+			}
+		}
+
+		#region Implementation.
 		private Grid _grid;
 		private Camera _uiCamera;
 		private bool _isPressed;
@@ -78,5 +104,6 @@ namespace Blk
 			_grid = GetComponent <Grid> ();
 			_uiCamera = NGUITools.FindCameraForLayer (this.gameObject.layer);
 		}
+		#endregion
 	}
 }

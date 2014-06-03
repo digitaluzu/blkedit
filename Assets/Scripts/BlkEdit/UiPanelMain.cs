@@ -146,6 +146,9 @@ namespace Blk
 
 				chunk.RequestRebuild ();
 			}
+
+			// Refresh the grid.
+			Main.GridController.RebuildGrid (blockData);
 		}
 	}
 }

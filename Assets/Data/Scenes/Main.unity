@@ -2777,7 +2777,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1873161009}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 719.173401, y: 1081.18042, z: -241.302368}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -2793,10 +2793,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64be8d6c23b0a4addaddbcebd62cf786, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mat: {fileID: 2100000, guid: 52d6ea4737e5a4617b30781b5924fa15, type: 2}
+  _gridController: {fileID: 1783545021}
   _colorPicker: {fileID: 1448948355}
   _spinRegion: {fileID: 1699573172}
   _panelMgr: {fileID: 226647726}
+  _blockMaterial: {fileID: 2100000, guid: 52d6ea4737e5a4617b30781b5924fa15, type: 2}
 --- !u!1 &1922565010
 GameObject:
   m_ObjectHideFlags: 0

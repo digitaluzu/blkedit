@@ -5,12 +5,6 @@ namespace Blk
 {
 	public class Main : Uzu.Main
 	{
-		public Material _mat;
-
-		public static Material Mat {
-			get { return _instance._mat; }
-		}
-
 		public static ColorPicker ColorPicker {
 			get { return _instance._colorPicker; }
 		}
@@ -25,6 +19,10 @@ namespace Blk
 
 		public static Uzu.BlockWorld BlockWorld {
 			get { return _instance._blockWorld; }
+		}
+
+		public static GridController GridController {
+			get { return _instance._gridController; }
 		}
 		
 		#region Overrided methods.
@@ -50,7 +48,7 @@ namespace Blk
 						}
 						{
 							Uzu.BlockDesc desc = new Uzu.BlockDesc ();
-							desc.Material = _mat;
+							desc.Material = _blockMaterial;
 							descs [1] = desc;
 						}
 						config.BlockDescs = descs;
@@ -84,11 +82,15 @@ namespace Blk
 		}
 
 		[SerializeField]
+		private GridController _gridController;
+		[SerializeField]
 		private ColorPicker _colorPicker;
 		[SerializeField]
 		private SpinWithMouse _spinRegion;
 		[SerializeField]
 		private Uzu.UiPanelMgr _panelMgr;
+		[SerializeField]
+		private Material _blockMaterial;
 
 		private CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
