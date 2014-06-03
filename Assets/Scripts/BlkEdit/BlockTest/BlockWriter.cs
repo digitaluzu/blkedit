@@ -6,21 +6,21 @@ namespace Uzu
 {
 	public static class BlockWriter
 	{
-		public static byte[] Write (Chunk chunk)
+		public static byte[] Write (BlockContainer blocks)
 		{
 			using (MemoryStream stream = new MemoryStream ()) {
 				using (BinaryWriter writer = new BinaryWriter (stream)) {
-					WriteImpl (writer, chunk);
+					WriteImpl (writer, blocks);
 					return stream.ToArray ();
 				}
 			}
 		}
 
 		#region Implementation
-		private static void WriteImpl (BinaryWriter writer, Chunk chunk)
+		private static void WriteImpl (BinaryWriter writer, BlockContainer blocks)
 		{
-			BlockFormat.Header header = PrepareHeader (chunk);
-			BlockFormat.Data data = PrepareData (chunk);
+			BlockFormat.Header header = PrepareHeader (blocks);
+			BlockFormat.Data data = PrepareData (blocks);
 
 			{
 				writer.Write (header.version);
@@ -41,23 +41,23 @@ namespace Uzu
 			}
 		}
 
-		private static BlockFormat.Header PrepareHeader (Chunk chunk)
+		private static BlockFormat.Header PrepareHeader (BlockContainer blocks)
 		{
 			BlockFormat.Header header = new BlockFormat.Header ();
 
 			{
 				header.version = BlockFormat.CURRENT_VERSION;
-				header.count = chunk.Blocks.CountXYZ;
+				header.count = blocks.CountXYZ;
 			}
 
 			return header;
 		}
 
-		private static BlockFormat.Data PrepareData (Chunk chunk)
+		private static BlockFormat.Data PrepareData (BlockContainer blocks)
 		{
 			BlockFormat.Data data = new BlockFormat.Data ();
 
-			VectorI3 xyz = chunk.Blocks.CountXYZ;
+			VectorI3 xyz = blocks.CountXYZ;
 
 			{
 				int totalCount = VectorI3.ElementProduct (xyz);
@@ -69,11 +69,11 @@ namespace Uzu
 			for (int x = 0; x < xyz.x; x++) {
 				for (int y = 0; y < xyz.y; y++) {
 					for (int z = 0; z < xyz.z; z++) {
-						BlockType blockType = chunk.Blocks [cnt].Type;
+						BlockType blockType = blocks [cnt].Type;
 
 						if (blockType != BlockType.EMPTY) {
 							data._states [cnt] = true;
-							data._colors [cnt] = new BlockFormat.RGB (chunk.Blocks [cnt].Color);
+							data._colors [cnt] = new BlockFormat.RGB (blocks [cnt].Color);
 						}
 
 						cnt++;
