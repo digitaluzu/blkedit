@@ -26,6 +26,10 @@ namespace Blk
 		public static CommandMgr CommandMgr {
 			get { return _instance._commandMgr; }
 		}
+
+		public static Uzu.BlockWorld BlockWorld {
+			get { return _instance._blockWorld; }
+		}
 		
 		#region Overrided methods.
 		protected override void OnMainBegin ()
@@ -94,18 +98,6 @@ namespace Blk
 
 		private CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
-		
-		public static Uzu.BlockWorld BlockWorld {
-			get { return _instance._blockWorld; }
-			set {
-				// TODO:
-				// Replace existing world.
-				GameObject.Destroy (_instance._blockWorld.gameObject);
-				_instance._blockWorld = value;
-
-				_instance._spinRegion.Target = value.CachedXform;
-			}
-		}
 		#endregion
 		
 		#region Implementation.	

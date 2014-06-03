@@ -100,25 +100,52 @@ namespace Blk
 			}
 		}
 
-		private const string FILENAME = "TestData/abc.txt";
+		private string GetTempFilePath ()
+		{
+			return Application.persistentDataPath + "/" + "abc.blk";
+		}
 
 		private void DoSave ()
 		{
-			Uzu.BlockExporter exporter = new Uzu.BlockExporter();
-			Uzu.BlockPack pack = new Uzu.BlockPack ();
-			pack._blockWorld = Main.BlockWorld;
-			exporter.Export (FILENAME, pack);
+			Uzu.ChunkIterator it = Main.BlockWorld.GetActiveChunksIterator ();
+			it.MoveNext ();
+
+			Uzu.BlockContainer blocks = it.CurrentChunk.Blocks;
+			byte[] data = Uzu.BlockWriter.Write (blocks);
+			Uzu.BlockIO.WriteFile (GetTempFilePath (), data);
 		}
 
 		private void DoLoad ()
 		{
-			Uzu.BlockImporter importer = new Uzu.BlockImporter ();
-			Uzu.BlockPack pack = importer.Import (FILENAME);
-			Main.BlockWorld = pack._blockWorld;
+			byte[] data = Uzu.BlockIO.ReadFile (GetTempFilePath ());
+			Uzu.BlockFormat.Data blockData = Uzu.BlockReader.Read (data);
 
-			// TODO:
-			Grid grid = GameObject.Find ("Grid").GetComponent <Grid> ();
-			grid.TODO_ForceRefreshWithCurrentWorld ();
+			// TODO: ugly
+			{
+				Uzu.ChunkIterator it = Main.BlockWorld.GetActiveChunksIterator ();
+				it.MoveNext ();
+
+				Uzu.Chunk chunk = it.CurrentChunk;
+
+				int count = blockData._states.Length;
+				
+				if (count != chunk.Blocks.Count) {
+					Debug.LogError ("Invalid BlockFormat.Data! Size does not match chunk size.");
+					return;
+				}
+				
+				for (int i = 0; i < count; i++) {
+					if (blockData._states [i]) {
+						chunk.Blocks [i].Type = Uzu.BlockType.SOLID;
+						chunk.Blocks [i].Color = blockData._colors [i].ToColor32 ();
+					}
+					else {
+						chunk.Blocks [i].Type = Uzu.BlockType.EMPTY;
+					}
+				}
+
+				chunk.RequestRebuild ();
+			}
 		}
 	}
 }
