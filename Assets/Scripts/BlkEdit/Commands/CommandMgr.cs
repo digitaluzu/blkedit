@@ -16,6 +16,12 @@ namespace Blk
 			get { return _redoCommands.Count != 0; }
 		}
 
+		public void ClearCommandHistory ()
+		{
+			_undoCommands.Clear ();
+			_redoCommands.Clear ();
+		}
+
 		/// <summary>
 		/// Execute a command.
 		/// </summary>
