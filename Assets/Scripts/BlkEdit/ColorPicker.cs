@@ -3,28 +3,33 @@ using System.Collections.Generic;
 
 namespace Blk
 {
-	// TODO: should be managed by panel??
 	public class ColorPicker : Uzu.BaseBehaviour
 	{
 		public Color32 ActiveColor {
 			get { return _activeColor; }
 		}
 
-		[SerializeField]
-		private GameObject[] _colors = null;
+		#region Implementation.
+		private GameObject[] _colorObjects;
 		private Color32 _activeColor;
 
 		protected override void Awake ()
 		{
 			base.Awake ();
 
-			for (int i = 0; i < _colors.Length; i++) {
-				UIEventListener.Get (_colors[i]).onClick += OnColorClicked;
+			// Initialize the objects.
+			{
+				_colorObjects = new GameObject[CachedXform.childCount];
+				for (int i = 0; i < _colorObjects.Length; i++) {
+					GameObject go = CachedXform.GetChild (i).gameObject;
+					_colorObjects [i] = go;
+					UIEventListener.Get (go).onClick += OnColorClicked;
+				}
 			}
 
 			// Default.
-			if (_colors.Length != 0) {
-				_activeColor = GetColor (_colors [0]);
+			if (_colorObjects.Length != 0) {
+				_activeColor = GetColor (_colorObjects [0]);
 			}
 		}
 
@@ -42,5 +47,6 @@ namespace Blk
 
 			return new Color32 (255, 255, 255, 255);
 		}
+		#endregion
 	}
 }

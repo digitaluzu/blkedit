@@ -31,6 +31,8 @@ namespace Blk
 		}
 
 		#region Implementation.
+		[SerializeField]
+		private ColorPicker _colorPicker;
 		private Grid _grid;
 		private Camera _uiCamera;
 		private bool _isPressed;
@@ -59,7 +61,7 @@ namespace Blk
 
 			// TODO: temp
 			if ((Main.PanelMgr.CurrentPanel as UiPanelMain).CurrentMode == UiPanelMain.Mode.Add) {
-				Color32 color = Main.ColorPicker.ActiveColor;
+				Color32 color = _colorPicker.ActiveColor;
 
 				// Only process if there is not already an entry at this coordinate,
 				// or the color of the coordinate will actually change.

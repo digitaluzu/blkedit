@@ -18,6 +18,11 @@ namespace Blk
 		[SerializeField]
 		private UIButton _redoButton;
 
+		[SerializeField]
+		private UISprite _activeColor;
+		[SerializeField]
+		private ColorPicker _colorPicker;
+
 		public enum Mode {
 			Add,
 			Remove,
@@ -98,6 +103,15 @@ namespace Blk
 					_redoButton.isEnabled = false;
 				}
 			}
+
+			Color newColor = _colorPicker.ActiveColor;
+			if (_currentMode == Mode.Add) {
+				newColor.a = 1.0f;
+			}
+			else {
+				newColor.a = 0.25f;
+			}
+			_activeColor.color = newColor;
 		}
 
 		private string GetTempFilePath ()

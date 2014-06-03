@@ -5,10 +5,6 @@ namespace Blk
 {
 	public class Main : Uzu.Main
 	{
-		public static ColorPicker ColorPicker {
-			get { return _instance._colorPicker; }
-		}
-
 		public static Uzu.UiPanelMgr PanelMgr {
 			get { return _instance._panelMgr; }
 		}
@@ -83,8 +79,6 @@ namespace Blk
 
 		[SerializeField]
 		private GridController _gridController;
-		[SerializeField]
-		private ColorPicker _colorPicker;
 		[SerializeField]
 		private SpinWithMouse _spinRegion;
 		[SerializeField]
