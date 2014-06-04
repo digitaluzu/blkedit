@@ -77,6 +77,38 @@ namespace Blk
 			_instance = null;
 		}
 
+		private void Update ()
+		{
+			if (Input.GetKeyDown (KeyCode.C)) {
+				StartCoroutine (TmpWebRequest());
+			}
+		}
+
+		private System.Collections.IEnumerator TmpWebRequest ()
+		{
+			Debug.Log ("sending http request....");
+			
+			const string url = "http://localhost:3000/";
+			
+			WWWForm form = new WWWForm ();
+			form.AddField ("testField", "myValue");
+
+			byte[] tmpBytes = {
+				1, 2, 3, 4
+			};
+			form.AddBinaryData("testBinary", tmpBytes);
+
+			WWW www = new WWW(url, form);
+			yield return www;
+			
+			if (!string.IsNullOrEmpty(www.error)) {
+				Debug.LogError (www.error);
+			}
+			else {
+				Debug.Log ("success: " + www.text);
+			}
+		}
+
 		[SerializeField]
 		private GridController _gridController;
 		[SerializeField]
