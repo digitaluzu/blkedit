@@ -86,17 +86,18 @@ namespace Blk
 
 		private System.Collections.IEnumerator TmpWebRequest ()
 		{
+#if false
+			// Post:
 			Debug.Log ("sending http request....");
 			
 			const string url = "http://localhost:3000/";
 			
 			WWWForm form = new WWWForm ();
-			form.AddField ("testField", "myValue");
+			form.AddField ("name", "test ship");
 
-			byte[] tmpBytes = {
-				1, 2, 3, 4
-			};
-			form.AddBinaryData("testBinary", tmpBytes);
+			string path = Application.persistentDataPath + "/" + "abc.blk";
+			byte[] data = Uzu.BlockIO.ReadFile (path);
+			form.AddBinaryData("file", data);
 
 			WWW www = new WWW(url, form);
 			yield return www;
@@ -107,6 +108,55 @@ namespace Blk
 			else {
 				Debug.Log ("success: " + www.text);
 			}
+#else
+			// Get:
+			const string url = "http://localhost:3000/query?id=0";
+
+			WWW www = new WWW (url);
+			yield return www;
+
+			if (!string.IsNullOrEmpty(www.error)) {
+				Debug.LogError (www.error);
+			}
+			else {
+				Debug.Log ("success: ");
+
+				{
+					byte[] data = www.bytes;
+					Uzu.BlockFormat.Data blockData = Uzu.BlockReader.Read (data);
+
+					// TODO: ugly
+					{
+						Uzu.ChunkIterator it = Main.BlockWorld.GetActiveChunksIterator ();
+						it.MoveNext ();
+						
+						Uzu.Chunk chunk = it.CurrentChunk;
+						
+						int count = blockData._states.Length;
+						
+						if (count != chunk.Blocks.Count) {
+							Debug.LogError ("Invalid BlockFormat.Data! Size does not match chunk size.");
+							return false;
+						}
+						
+						for (int i = 0; i < count; i++) {
+							if (blockData._states [i]) {
+								chunk.Blocks [i].Type = Uzu.BlockType.SOLID;
+								chunk.Blocks [i].Color = blockData._colors [i].ToColor32 ();
+							}
+							else {
+								chunk.Blocks [i].Type = Uzu.BlockType.EMPTY;
+							}
+						}
+						
+						chunk.RequestRebuild ();
+					}
+					
+					// Refresh the grid.
+					Main.GridController.RebuildGrid (blockData);
+				}
+			}
+#endif
 		}
 
 		[SerializeField]
