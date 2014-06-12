@@ -20,6 +20,10 @@ namespace Blk
 		public static GridController GridController {
 			get { return _instance._gridController; }
 		}
+
+		public static HttpRequestHandler HttpRequestHandler {
+			get { return _instance._httpRequestHandler; }
+		}
 		
 		#region Overrided methods.
 		protected override void OnMainBegin ()
@@ -29,6 +33,11 @@ namespace Blk
 			// Singleton creation.
 			{
 				_commandMgr = new BlkEdit.CommandMgr ();
+
+				{
+					GameObject go = new GameObject ("HttpRequestHandler", typeof (HttpRequestHandler));
+					_httpRequestHandler = go.GetComponent <HttpRequestHandler> ();
+				}
 
 				// Create block world.
 				{
@@ -171,6 +180,7 @@ namespace Blk
 
 		private BlkEdit.CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
+		private HttpRequestHandler _httpRequestHandler;
 		#endregion
 		
 		#region Implementation.	

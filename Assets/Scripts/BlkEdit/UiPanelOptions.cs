@@ -97,7 +97,17 @@ namespace Blk
 		{
 			_searchOnlineObject.SetActive (true);
 
-			_tableController.AddEntry ("hello1");
+			_tableController.ClearEntries ();
+			Main.HttpRequestHandler.GetIds (OnGetEntriesResponse);
+		}
+
+		private void OnGetEntriesResponse (Uzu.SmartList <int> ids)
+		{
+			for (int i = 0; i < ids.Count; i++) {
+				_tableController.AddEntry ("Id: " + ids [i]);
+			}
+
+			// TODO: for each id, query server for necessary data
 		}
 	}
 }

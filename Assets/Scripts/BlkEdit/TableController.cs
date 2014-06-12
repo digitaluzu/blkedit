@@ -30,6 +30,13 @@ namespace Blk
 //			_table.repositionNow = true;
 		}
 
+		public void ClearEntries ()
+		{
+			_tableEntryPool.UnspawnAll ();
+			_table.repositionNow = true;
+//			_table.Reposition ();
+		}
+
 		protected override void Awake ()
 		{
 			base.Awake ();
