@@ -5,14 +5,14 @@ namespace BlkEdit
 {
 	public class AddBlockCommand : CommandInterface
 	{
-		private GridInterface _grid;
+		private Grid _grid;
 		private Uzu.VectorI2 _coord;
 		private Color32 _newColor;
 
 		private bool _prevState;
 		private Color32 _prevColor;
 
-		public AddBlockCommand (GridInterface grid, Uzu.VectorI2 coord, Color32 color)
+		public AddBlockCommand (Grid grid, Uzu.VectorI2 coord, Color32 color)
 		{
 			_grid = grid;
 			_coord = coord;

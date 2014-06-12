@@ -2337,10 +2337,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1783545016}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 853de60f4f33148d58ba81dc40dedecf, type: 3}
+  m_Script: {fileID: 11500000, guid: e9503e208011944f7a607d5711e20f35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gridCellPrefab: {fileID: 100000, guid: 4155755304292454392500851ce9a183, type: 2}
 --- !u!114 &1783545019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2422,6 +2421,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _colorPicker: {fileID: 2086639606}
+  _gridCellPrefab: {fileID: 100000, guid: 4155755304292454392500851ce9a183, type: 2}
 --- !u!1 &1873161009
 GameObject:
   m_ObjectHideFlags: 0
