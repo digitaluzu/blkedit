@@ -65,7 +65,7 @@ namespace Blk
 		#region Implementation.
 		[SerializeField]
 		private GameObject _gridCellPrefab;
-		private GridLayer _currentLayer;
+		private BlkEdit.GridLayer _currentLayer;
 		private Uzu.FixedList <GridCell> _cells;
 
 		private Vector2 _cellSize;
@@ -74,7 +74,7 @@ namespace Blk
 		{
 			base.Awake ();
 
-			_currentLayer = new GridLayer (Constants.GRID_DIMENSIONS);
+			_currentLayer = new BlkEdit.GridLayer (Constants.GRID_DIMENSIONS);
 
 			// Allocate and initialize sprite resources.
 			{

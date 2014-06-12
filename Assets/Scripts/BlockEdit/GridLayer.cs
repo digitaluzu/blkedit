@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Blk
+namespace BlkEdit
 {
 	public class GridLayer
 	{
@@ -16,25 +16,25 @@ namespace Blk
 
 		public bool IsSet (Uzu.VectorI2 coord)
 		{
-			int idx = Grid.CoordToIndex (_dimensions, coord);
+			int idx = CoordToIndex (_dimensions, coord);
 			return _states [idx];
 		}
 
 		public void Unset (Uzu.VectorI2 coord)
 		{
-			int idx = Grid.CoordToIndex (_dimensions, coord);
+			int idx = CoordToIndex (_dimensions, coord);
 			_states [idx] = false;
 		}
 
 		public Color32 GetColor (Uzu.VectorI2 coord)
 		{
-			int idx = Grid.CoordToIndex (_dimensions, coord);
+			int idx = CoordToIndex (_dimensions, coord);
 			return _colors [idx];
 		}
 
 		public void SetColor (Uzu.VectorI2 coord, Color32 color)
 		{
-			int idx = Grid.CoordToIndex (_dimensions, coord);
+			int idx = CoordToIndex (_dimensions, coord);
 			_states [idx] = true;
 			_colors [idx] = color;
 		}
@@ -50,6 +50,11 @@ namespace Blk
 		private Uzu.VectorI2 _dimensions;
 		private bool[] _states;
 		private Color32[] _colors;
+
+		private static int CoordToIndex (Uzu.VectorI2 dimensions, Uzu.VectorI2 coord)
+		{
+			return coord.y * dimensions.x + coord.x;
+		}
 		#endregion
 	};
 }
