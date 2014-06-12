@@ -9,6 +9,7 @@ Material:
   m_Name: TestMat
   m_Shader: {fileID: 4800000, guid: 3aab66e010972485daed910caa4d95d2, type: 3}
   m_ShaderKeywords: []
+  m_CustomRenderQueue: -1
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
@@ -16,7 +17,7 @@ Material:
         first:
           name: _MainTex
         second:
-          m_Texture: {fileID: 2800000, guid: 173b8ac8582c14c1b8ce9f8336468ea0, type: 3}
+          m_Texture: {fileID: 2800000, guid: 901bc70b9bdf34bcdb2be7fb32b61695, type: 3}
           m_Scale: {x: 1, y: 1}
           m_Offset: {x: 0, y: 0}
       data:
@@ -38,12 +39,12 @@ Material:
         second: {r: 1, g: 1, b: 1, a: 1}
       data:
         first:
-          name: _SpecColor
-        second: {r: 1, g: 1, b: 1, a: 0}
-      data:
-        first:
           name: _Emission
         second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _SpecColor
+        second: {r: 1, g: 1, b: 1, a: 0}
       data:
         first:
           name: _EmisColor
