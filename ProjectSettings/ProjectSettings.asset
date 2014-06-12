@@ -9,7 +9,7 @@ PlayerSettings:
   targetDevice: 2
   targetGlesGraphics: 1
   targetResolution: 0
-  accelerometerFrequency: 60
+  accelerometerFrequency: 0
   companyName: DefaultCompany
   productName: blkedit
   defaultCursor: {fileID: 0}
@@ -41,7 +41,7 @@ PlayerSettings:
   captureSingleScreen: 0
   Override IPod Music: 0
   Prepare IOS For Recording: 0
-  enableHWStatistics: 1
+  enableHWStatistics: 0
   usePlayerLog: 1
   stripPhysics: 0
   forceSingleInstance: 0
@@ -74,15 +74,15 @@ PlayerSettings:
   AndroidPreferredInstallLocation: 1
   aotOptions: 
   apiCompatibilityLevel: 2
-  iPhoneStrippingLevel: 0
-  iPhoneScriptCallOptimization: 0
+  iPhoneStrippingLevel: 3
+  iPhoneScriptCallOptimization: 1
   ForceInternetPermission: 0
   ForceSDCardPermission: 0
   CreateWallpaper: 0
   APKExpansionFiles: 0
-  StripUnusedMeshComponents: 0
+  StripUnusedMeshComponents: 1
   iPhoneSdkVersion: 988
-  iPhoneTargetOSVersion: 10
+  iPhoneTargetOSVersion: 20
   uIPrerenderedIcon: 0
   uIRequiresPersistentWiFi: 0
   uIStatusBarHidden: 1
