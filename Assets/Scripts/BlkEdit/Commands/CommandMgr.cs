@@ -8,12 +8,20 @@ namespace Blk
 	/// </summary>
 	public class CommandMgr
 	{
-		public bool HasCommandsToUndo {
-			get { return _undoCommands.Count != 0; }
+		public bool CanUndo {
+			get {
+				return
+					_undoCommands.Count != 0 &&
+					!IsExecutingGroup();
+			}
 		}
 
-		public bool HasCommandsToRedo {
-			get { return _redoCommands.Count != 0; }
+		public bool CanRedo {
+			get {
+				return
+					_redoCommands.Count != 0 &&
+					!IsExecutingGroup ();
+			}
 		}
 
 		public void ClearCommandHistory ()
@@ -32,7 +40,14 @@ namespace Blk
 			// undo tree or branching.
 			_redoCommands.Clear ();
 
-			_undoCommands.Push (cmd);
+			// Add to existing group?
+			if (IsExecutingGroup ()) {
+				GroupCommand topCommand = (GroupCommand)_undoCommands.Peek ();
+				topCommand.AddChild (cmd);
+			}
+			else {
+				_undoCommands.Push (cmd);
+			}
 
 			cmd.Do ();
 		}
@@ -42,7 +57,7 @@ namespace Blk
 		/// </summary>
 		public void UndoCommand ()
 		{
-			if (_undoCommands.Count > 0) {
+			if (CanUndo) {
 				CommandInterface cmd = _undoCommands.Pop ();
 				_redoCommands.Push (cmd);
 
@@ -55,7 +70,7 @@ namespace Blk
 		/// </summary>
 		public void RedoCommand ()
 		{
-			if (_redoCommands.Count > 0) {
+			if (CanRedo) {
 				CommandInterface cmd = _redoCommands.Pop ();
 				_undoCommands.Push (cmd);
 
@@ -63,9 +78,86 @@ namespace Blk
 			}
 		}
 
+		public void BeginGroupCommand ()
+		{
+			if (IsExecutingGroup ()) {
+				Debug.LogWarning ("Already executing a group command.");
+				return;
+			}
+
+			GroupCommand cmd = new GroupCommand ();
+			cmd.IsActive = true;
+
+			_undoCommands.Push (cmd);
+		}
+
+		public void EndGroupCommand ()
+		{
+			if (!IsExecutingGroup ()) {
+				Debug.LogWarning ("No group command has been started.");
+				return;
+			}
+
+			GroupCommand cmd = (GroupCommand)_undoCommands.Peek ();
+			cmd.IsActive = false;
+		}
+
 		#region Implementation.
 		private Stack <CommandInterface> _undoCommands = new Stack<CommandInterface> ();
 		private Stack <CommandInterface> _redoCommands = new Stack<CommandInterface> ();
+
+		private bool IsExecutingGroup ()
+		{
+			if (_undoCommands.Count > 0) {
+				GroupCommand topCmd = _undoCommands.Peek () as GroupCommand;
+				if (topCmd != null &&
+				    topCmd.IsActive) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private class GroupCommand : CommandInterface
+		{
+			public bool IsActive {
+				get { return _isActive; }
+				set {
+					_isActive = value;
+
+#if UNITY_EDITOR
+					if (_isActive == false) {
+						if (_childCmds.Count == 0) {
+							Debug.LogWarning ("Empty command group.");
+						}
+					}
+#endif
+				}
+			}
+
+			private bool _isActive;
+			private List <CommandInterface> _childCmds = new List<CommandInterface> ();
+
+			public void AddChild (CommandInterface cmd)
+			{
+				_childCmds.Add (cmd);
+			}
+
+			public void Do ()
+			{
+				for (int i = 0; i < _childCmds.Count; i++) {
+					_childCmds [i].Do ();
+				}
+			}
+			
+			public void Undo ()
+			{
+				for (int i = _childCmds.Count - 1; i >= 0; i--) {
+					_childCmds [i].Undo ();
+				}
+			}
+		}
 		#endregion
 	}
 }

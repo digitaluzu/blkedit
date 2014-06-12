@@ -5,12 +5,8 @@ namespace Blk
 {
 	public class Grid : Uzu.BaseBehaviour
 	{
-		public Vector3 TEMP_GridPivotOffset {
-			get { return _TEMP_gridPivotOffset; }
-		}
-
-		public Vector2 TEMP_CellSize {
-			get { return _TEMP_cellSize; }
+		public Vector2 CellSize {
+			get { return _cellSize; }
 		}
 
 		public static int CoordToIndex (Uzu.VectorI2 dimensions, Uzu.VectorI2 coord)
@@ -72,32 +68,19 @@ namespace Blk
 		private GridLayer _currentLayer;
 		private Uzu.FixedList <GridCell> _cells;
 
-		private Vector3 _TEMP_gridPivotOffset;
-		private Vector2 _TEMP_cellSize;
+		private Vector2 _cellSize;
 
 		protected override void Awake ()
 		{
 			base.Awake ();
 
 			_currentLayer = new GridLayer (Constants.GRID_DIMENSIONS);
-		}
 
-		private void Start ()
-		{
 			// Allocate and initialize sprite resources.
 			{
 				UITexture gridSprite = GetComponent <UITexture> ();
 				int cellSpriteDepth = gridSprite.depth - 1;
-				Vector2 cellSize = new Vector2 (gridSprite.localSize.x / Constants.GRID_DIMENSIONS.x, gridSprite.localSize.y / Constants.GRID_DIMENSIONS.y);
-				Vector3 gridPivotOffset;
-
-				{
-					Vector2 pivot = gridSprite.pivotOffset;
-					gridPivotOffset = new Vector3 (pivot.x * gridSprite.width, pivot.y * gridSprite.height, 0.0f);
-
-					_TEMP_gridPivotOffset = gridPivotOffset;
-					_TEMP_cellSize = cellSize;
-				}
+				_cellSize = new Vector2 (gridSprite.localSize.x / Constants.GRID_DIMENSIONS.x, gridSprite.localSize.y / Constants.GRID_DIMENSIONS.y);
 
 				int totalCount = Uzu.VectorI2.ElementProduct (Constants.GRID_DIMENSIONS);
 				_cells = new Uzu.FixedList<GridCell> (totalCount);
@@ -106,7 +89,7 @@ namespace Blk
 					for (int x = 0; x < Constants.GRID_DIMENSIONS.x; x++) {
 						Uzu.VectorI2 coord = new Uzu.VectorI2 (x, y);
 
-						Vector3 pos = Uzu.Math.Vector2ToVector3 (coord * cellSize) - gridPivotOffset;
+						Vector3 pos = Uzu.Math.Vector2ToVector3 (coord * _cellSize);
 						GameObject go = (GameObject)GameObject.Instantiate (_gridCellPrefab);
 						Transform xform = go.transform;
 						xform.parent = CachedXform;
@@ -116,8 +99,8 @@ namespace Blk
 
 						UISprite sprite = cell.Sprite;
 						sprite.depth = cellSpriteDepth;
-						sprite.width = (int)cellSize.x;
-						sprite.height = (int)cellSize.y;
+						sprite.width = (int)_cellSize.x - 1;
+						sprite.height = (int)_cellSize.y - 1;
 
 						_cells.Add (cell);
 

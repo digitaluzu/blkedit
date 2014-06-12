@@ -5,6 +5,29 @@ namespace Blk
 {
 	public class GridController : Uzu.BaseBehaviour
 	{
+		public enum Mode {
+			AddBlocks,
+			EraseBlocks,
+			EyeDropper,
+			Count,
+		};
+
+		public Mode CurrentMode {
+			get; set;
+		}
+
+		public void ClearGrid ()
+		{
+			Uzu.VectorI2 xy = Constants.GRID_DIMENSIONS;
+
+			for (int x = 0; x < xy.x; x++) {
+				for (int y = 0; y < xy.y; y++) {
+					Uzu.VectorI2 coord = new Uzu.VectorI2 (x, y);
+					_grid.Unset (coord);
+				}
+			}
+		}
+
 		public void RebuildGrid (Uzu.BlockFormat.Data data)
 		{
 			Uzu.VectorI2 xy = Constants.GRID_DIMENSIONS;
@@ -41,8 +64,21 @@ namespace Blk
 		{
 			_isPressed = pressed;
 
+			// TODO: cleanup
+
 			if (_isPressed) {
+				if (CurrentMode == Mode.AddBlocks ||
+				    CurrentMode == Mode.EraseBlocks) {
+					Blk.Main.CommandMgr.BeginGroupCommand ();
+				}
+
 				ProcessInput ();
+			}
+			else {
+				if (CurrentMode == Mode.AddBlocks ||
+				    CurrentMode == Mode.EraseBlocks) {
+					Blk.Main.CommandMgr.EndGroupCommand ();
+				}
 			}
 		}
 
@@ -59,8 +95,7 @@ namespace Blk
 			// Calculate cell coordinates.
 			Uzu.VectorI2 coord = ScreenPosToCoord (UICamera.lastTouchPosition);
 
-			// TODO: temp
-			if ((Main.PanelMgr.CurrentPanel as UiPanelMain).CurrentMode == UiPanelMain.Mode.Add) {
+			if (CurrentMode == Mode.AddBlocks) {
 				Color32 color = _colorPicker.ActiveColor;
 
 				// Only process if there is not already an entry at this coordinate,
@@ -70,12 +105,21 @@ namespace Blk
 					Main.CommandMgr.DoCommand (cmd);
 				}
 			}
-			else {
+			else if (CurrentMode == Mode.EraseBlocks) {
 				// Only process if there is an existing entry at this coord.
 				if (_grid.IsSet (coord)) {
 					CommandInterface cmd = new EraseBlockCommand (_grid, coord);
 					Main.CommandMgr.DoCommand (cmd);
 				}
+			}
+			else if (CurrentMode == Mode.EyeDropper) {
+				if (_grid.IsSet (coord)) {
+					Color32 color = _grid.GetColor (coord);
+					_colorPicker.ActiveColor = color;
+				}
+			}
+			else {
+				Debug.LogWarning ("Unhandled mode: " + CurrentMode);
 			}
 		}
 
@@ -92,9 +136,7 @@ namespace Blk
 			Vector3 worldPos = _uiCamera.ScreenToWorldPoint (screenPos);
 			Vector3 localPos = CachedXform.worldToLocalMatrix.MultiplyPoint3x4 (worldPos);
 			
-			localPos += _grid.TEMP_GridPivotOffset;
-			
-			Uzu.VectorI2 cellCoord = new Uzu.VectorI2 (localPos.x / _grid.TEMP_CellSize.x, localPos.y / _grid.TEMP_CellSize.y);
+			Uzu.VectorI2 cellCoord = new Uzu.VectorI2 (localPos.x / _grid.CellSize.x, localPos.y / _grid.CellSize.y);
 			cellCoord = Uzu.VectorI2.Clamp (cellCoord, Uzu.VectorI2.zero, Constants.GRID_DIMENSIONS - Uzu.VectorI2.one);
 			return cellCoord;
 		}

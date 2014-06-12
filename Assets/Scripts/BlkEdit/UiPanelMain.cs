@@ -82,7 +82,7 @@ namespace Blk
 
 		public override void OnUpdate ()
 		{
-			if (Main.CommandMgr.HasCommandsToUndo) {
+			if (Main.CommandMgr.CanUndo) {
 				if (!_undoButton.isEnabled) {
 					_undoButton.isEnabled = true;
 				}
@@ -93,7 +93,7 @@ namespace Blk
 				}
 			}
 
-			if (Main.CommandMgr.HasCommandsToRedo) {
+			if (Main.CommandMgr.CanRedo) {
 				if (!_redoButton.isEnabled) {
 					_redoButton.isEnabled = true;
 				}
