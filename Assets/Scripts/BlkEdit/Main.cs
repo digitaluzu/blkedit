@@ -69,7 +69,7 @@ namespace Blk
 		
 		protected override void OnMainBegin2 ()
 		{
-			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_MAIN);
+			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
 		}
 
 		protected override void OnMainEnd ()

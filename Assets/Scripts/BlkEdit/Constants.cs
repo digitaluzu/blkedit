@@ -2,12 +2,10 @@ using UnityEngine;
 
 namespace Blk
 {
-	/// <summary>
-	/// Panel ids for the user interface.
-	/// </summary>
 	public static class PanelIds
 	{
-		public const string PANEL_MAIN = "Panel-Main";
+		public const string PANEL_CANVAS = "Panel-Canvas";
+		public const string PANEL_OPTIONS = "Panel-Options";
 	}
 	
 	public static class Constants
