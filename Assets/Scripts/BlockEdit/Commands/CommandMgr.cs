@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace Blk
+namespace BlkEdit
 {
 	/// <summary>
 	/// Manages execution of commands.

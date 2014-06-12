@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Blk
+namespace BlkEdit
 {
 	public interface CommandInterface
 	{

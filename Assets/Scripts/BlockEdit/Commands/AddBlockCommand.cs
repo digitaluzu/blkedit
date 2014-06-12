@@ -1,18 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Blk
+namespace BlkEdit
 {
 	public class AddBlockCommand : CommandInterface
 	{
-		private Grid _grid;
+		private GridInterface _grid;
 		private Uzu.VectorI2 _coord;
 		private Color32 _newColor;
 
 		private bool _prevState;
 		private Color32 _prevColor;
 
-		public AddBlockCommand (Grid grid, Uzu.VectorI2 coord, Color32 color)
+		public AddBlockCommand (GridInterface grid, Uzu.VectorI2 coord, Color32 color)
 		{
 			_grid = grid;
 			_coord = coord;

@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Blk
 {
-	public class Grid : Uzu.BaseBehaviour
+	public class Grid : Uzu.BaseBehaviour, BlkEdit.GridInterface
 	{
 		public Vector2 CellSize {
 			get { return _cellSize; }

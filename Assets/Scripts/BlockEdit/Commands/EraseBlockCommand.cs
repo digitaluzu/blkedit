@@ -1,17 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Blk
+namespace BlkEdit
 {
 	public class EraseBlockCommand : CommandInterface
 	{
-		private Grid _grid;
+		private GridInterface _grid;
 		private Uzu.VectorI2 _coord;
 
 		private bool _prevState;
 		private Color32 _prevColor;
 
-		public EraseBlockCommand (Grid grid, Uzu.VectorI2 coord)
+		public EraseBlockCommand (GridInterface grid, Uzu.VectorI2 coord)
 		{
 			_grid = grid;
 			_coord = coord;

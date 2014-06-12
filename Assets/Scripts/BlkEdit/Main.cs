@@ -9,7 +9,7 @@ namespace Blk
 			get { return _instance._panelMgr; }
 		}
 
-		public static CommandMgr CommandMgr {
+		public static BlkEdit.CommandMgr CommandMgr {
 			get { return _instance._commandMgr; }
 		}
 
@@ -28,7 +28,7 @@ namespace Blk
 			
 			// Singleton creation.
 			{
-				_commandMgr = new CommandMgr ();
+				_commandMgr = new BlkEdit.CommandMgr ();
 
 				// Create block world.
 				{
@@ -168,7 +168,7 @@ namespace Blk
 		[SerializeField]
 		private Material _blockMaterial;
 
-		private CommandMgr _commandMgr;
+		private BlkEdit.CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
 		#endregion
 		

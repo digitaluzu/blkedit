@@ -101,14 +101,14 @@ namespace Blk
 				// Only process if there is not already an entry at this coordinate,
 				// or the color of the coordinate will actually change.
 				if (!_grid.IsSet (coord) || !IsSameColor (_grid.GetColor (coord), color)) {
-					CommandInterface cmd = new AddBlockCommand (_grid, coord, color);
+					BlkEdit.CommandInterface cmd = new BlkEdit.AddBlockCommand (_grid, coord, color);
 					Main.CommandMgr.DoCommand (cmd);
 				}
 			}
 			else if (CurrentMode == Mode.EraseBlocks) {
 				// Only process if there is an existing entry at this coord.
 				if (_grid.IsSet (coord)) {
-					CommandInterface cmd = new EraseBlockCommand (_grid, coord);
+					BlkEdit.CommandInterface cmd = new BlkEdit.EraseBlockCommand (_grid, coord);
 					Main.CommandMgr.DoCommand (cmd);
 				}
 			}
