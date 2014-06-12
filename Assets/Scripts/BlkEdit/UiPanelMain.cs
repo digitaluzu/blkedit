@@ -8,8 +8,8 @@ namespace Blk
 		private const string MODE_BUTTON_ID = "ModeButton";
 		private const string SAVE_BUTTON_ID = "SaveButton";
 		private const string LOAD_BUTTON_ID = "LoadButton";
-		private const string UNDO_BUTTON_ID = "UndoButton";
-		private const string REDO_BUTTON_ID = "RedoButton";
+		private const string UNDO_BUTTON_ID = "Button-Undo";
+		private const string REDO_BUTTON_ID = "Button-Redo";
 
 		[SerializeField]
 		private UILabel _modeButton;
