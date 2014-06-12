@@ -8,6 +8,7 @@ namespace Blk
 		private const string BUTTON_ID_SAVE = "Button-Save";
 		private const string BUTTON_ID_LOAD = "Button-Load";
 		private const string BUTTON_ID_CLOSE = "Button-Close";
+		private const string BUTTON_ID_SEARCH = "Button-Search";
 
 		public override void OnClick (Uzu.UiWidget widget)
 		{
@@ -23,6 +24,10 @@ namespace Blk
 
 			case BUTTON_ID_CLOSE:
 				DoClose ();
+				break;
+
+			case BUTTON_ID_SEARCH:
+				DoSearchOnline ();
 				break;
 			}
 		}
@@ -81,6 +86,18 @@ namespace Blk
 		private void DoClose ()
 		{
 			Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
+		}
+
+		[SerializeField]
+		private GameObject _searchOnlineObject;
+		[SerializeField]
+		private TableController _tableController;
+
+		private void DoSearchOnline ()
+		{
+			_searchOnlineObject.SetActive (true);
+
+			_tableController.AddEntry ("hello1");
 		}
 	}
 }
