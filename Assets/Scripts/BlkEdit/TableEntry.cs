@@ -9,7 +9,13 @@ namespace Blk
 			set { _label.text = value; }
 		}
 
+		public Texture2D Texture {
+			set { _texture.mainTexture = value; }
+		}
+
 		[SerializeField]
 		private UILabel _label;
+		[SerializeField]
+		private UITexture _texture;
 	}
 }

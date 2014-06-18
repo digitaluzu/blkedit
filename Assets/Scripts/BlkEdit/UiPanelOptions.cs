@@ -98,16 +98,28 @@ namespace Blk
 			_searchOnlineObject.SetActive (true);
 
 			_tableController.ClearEntries ();
-			Main.HttpRequestHandler.GetIds (OnGetEntriesResponse);
+
+			// TODO: move to awake or setup function..
+			Main.HttpRequestHandler.OnGetMostRecentEntries = OnGetMostRecentEntries;
+			Main.HttpRequestHandler.OnGetImage = OnGetImage;
+
+			Main.HttpRequestHandler.GetMostRecentEntries();
 		}
 
-		private void OnGetEntriesResponse (Uzu.SmartList <int> ids)
+		private void OnGetMostRecentEntries (HttpRequestHandler.DataInfo data)
 		{
-			for (int i = 0; i < ids.Count; i++) {
-				_tableController.AddEntry ("Id: " + ids [i]);
-			}
+			Debug.Log ("OnGetMostRecentEntries");
 
-			// TODO: for each id, query server for necessary data
+			_tableController.AddEntry (data.id);
+
+			Main.HttpRequestHandler.GetImage (data.id, data.imageURL);
+		}
+
+		private void OnGetImage (string id, Texture2D texture)
+		{
+			Debug.Log ("OnGetImage");
+
+			_tableController.UpdateEntry (id, texture);
 		}
 	}
 }
