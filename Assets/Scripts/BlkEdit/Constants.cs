@@ -11,7 +11,8 @@ namespace Blk
 	public static class Constants
 	{
 		public static readonly System.Guid API_KEY = new System.Guid ("9C085DC5-EA3C-484B-A767-2F56019AB0F3");
-		public const string SERVER_URL = "http://localhost:3000/";
+		public const string API_VERSION = "v0";
+		public const string SERVER_URL = "http://localhost:3000/api/" + API_VERSION;
 
 		public static readonly Vector3 BLOCK_SIZE = Vector3.one;
 
