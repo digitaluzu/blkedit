@@ -9,6 +9,10 @@ namespace Blk
 	// TODO: parse error code from error string (if possible)... WWW class doesn't give a nicely formatted error code, so we have to do it ourself.
 	public class HttpRequestHandler : Uzu.BaseBehaviour
 	{
+		public const string API_VERSION = "v0";
+		public const string PORT = "3000";
+		public const string SERVER_URL = "http://localhost:" + PORT + "/api/" + API_VERSION;
+
 		public delegate void OnGetMostRecentEntriesDelegate (DataInfo data);
 		public OnGetMostRecentEntriesDelegate OnGetMostRecentEntries;
 
@@ -43,7 +47,7 @@ namespace Blk
 		private IEnumerator DoGetMostRecentEntries ()
 		{
 			// TODO: count + offset + paging
-			string url = Constants.SERVER_URL + "/models/most_recent";
+			string url = SERVER_URL + "/models/most_recent";
 			
 			WWW www = new WWW (url);
 			yield return www;
