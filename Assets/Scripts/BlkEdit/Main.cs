@@ -62,9 +62,10 @@ namespace Blk
 					GameObject blockWorldGO = new GameObject ("UzuBlockWorld", typeof(Uzu.BlockWorld));
 					_blockWorld = blockWorldGO.GetComponent<Uzu.BlockWorld> ();
 					_blockWorld.Initialize (config);
+					_blockWorld.CachedXform.parent = _modelViewPivotXform;
 
 					{
-						_spinRegion.Target = _blockWorld.CachedXform;
+						_spinRegion.Target = _modelViewPivotXform;
 
 						float centerPosX = (_blockWorld.Config.BlockSize.x * _blockWorld.Config.ChunkSizeInBlocks.x) * 0.5f;
 						_spinRegion.RotationPoint = new Vector3 (centerPosX, 0.0f, 0.0f);
@@ -89,6 +90,8 @@ namespace Blk
 
 		[SerializeField]
 		private GridController _gridController;
+		[SerializeField]
+		private Transform _modelViewPivotXform;
 		[SerializeField]
 		private SpinWithMouse _spinRegion;
 		[SerializeField]
