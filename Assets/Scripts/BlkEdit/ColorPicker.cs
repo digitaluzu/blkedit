@@ -125,8 +125,8 @@ namespace Blk
 				}
 			}
 
-			// Default.
-			ActiveColor = Color.white;
+			// Make sure they're synchronized.
+			ActiveColor = _activeColor;
 		}
 
 		private void OnColorClicked (GameObject go)

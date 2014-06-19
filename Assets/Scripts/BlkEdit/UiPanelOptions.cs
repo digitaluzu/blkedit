@@ -10,6 +10,10 @@ namespace Blk
 		private const string BUTTON_ID_CLOSE = "Button-Close";
 		private const string BUTTON_ID_SEARCH = "Button-Search";
 
+		private const string BUTTON_ID_MODE_ADD = "Button-ModeAdd";
+		private const string BUTTON_ID_MODE_ERASE = "Button-ModeErase";
+		private const string BUTTON_ID_MODE_EYEDROP = "Button-ModeEyedrop";
+
 		public override void OnClick (Uzu.UiWidget widget)
 		{
 			switch (widget.name)
@@ -28,6 +32,18 @@ namespace Blk
 
 			case BUTTON_ID_SEARCH:
 				DoSearchOnline ();
+				break;
+
+			case BUTTON_ID_MODE_ADD:
+				DoSelectTool (GridController.Mode.AddBlocks);
+				break;
+
+			case BUTTON_ID_MODE_ERASE:
+				DoSelectTool (GridController.Mode.EraseBlocks);
+				break;
+
+			case BUTTON_ID_MODE_EYEDROP:
+				DoSelectTool (GridController.Mode.EyeDropper);
 				break;
 			}
 		}
@@ -81,6 +97,12 @@ namespace Blk
 			
 			// Refresh the grid.
 			Main.GridController.RebuildGrid (blockData);
+		}
+
+		private void DoSelectTool (GridController.Mode mode)
+		{
+			Main.GridController.CurrentMode = mode;
+			DoClose ();
 		}
 
 		private void DoClose ()
