@@ -23,6 +23,7 @@ namespace Blk
 		private UISprite _activeColorTile;
 		private Uzu.FixedList <GameObject> _colorTiles;
 
+		[SerializeField]
 		private Color32 _activeColor;
 
 		protected override void Awake ()

@@ -3679,6 +3679,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _colorTilePrefab: {fileID: 100000, guid: 14944b2e76fdb4cba929aeb8fcc76112, type: 2}
   _activeColorTile: {fileID: 1907741861}
+  _activeColor:
+    serializedVersion: 2
+    rgba: 4278190080
 --- !u!114 &2086639607
 MonoBehaviour:
   m_ObjectHideFlags: 0
