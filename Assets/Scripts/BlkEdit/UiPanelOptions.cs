@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace Blk
 {
@@ -48,55 +48,9 @@ namespace Blk
 			}
 		}
 
-		private string GetTempFilePath ()
-		{
-			return Application.persistentDataPath + "/" + "abc.blk";
-		}
-
 		private void DoSave ()
 		{
-			Uzu.ChunkIterator it = Main.BlockWorld.GetActiveChunksIterator ();
-			it.MoveNext ();
-			
-			Uzu.BlockContainer blocks = it.CurrentChunk.Blocks;
-			byte[] data = Uzu.BlockWriter.Write (blocks);
-			Uzu.BlockIO.WriteFile (GetTempFilePath (), data);
-		}
-		
-		private void DoLoad ()
-		{
-			byte[] data = Uzu.BlockIO.ReadFile (GetTempFilePath ());
-			Uzu.BlockFormat.Data blockData = Uzu.BlockReader.Read (data);
-			
-			// TODO: ugly
-			{
-				Uzu.ChunkIterator it = Main.BlockWorld.GetActiveChunksIterator ();
-				it.MoveNext ();
-				
-				Uzu.Chunk chunk = it.CurrentChunk;
-				
-				int count = blockData._states.Length;
-				
-				if (count != chunk.Blocks.Count) {
-					Debug.LogError ("Invalid BlockFormat.Data! Size does not match chunk size.");
-					return;
-				}
-				
-				for (int i = 0; i < count; i++) {
-					if (blockData._states [i]) {
-						chunk.Blocks [i].Type = Uzu.BlockType.SOLID;
-						chunk.Blocks [i].Color = blockData._colors [i].ToColor32 ();
-					}
-					else {
-						chunk.Blocks [i].Type = Uzu.BlockType.EMPTY;
-					}
-				}
-				
-				chunk.RequestRebuild ();
-			}
-			
-			// Refresh the grid.
-			Main.GridController.RebuildGrid (blockData);
+			Main.WorkspaceController.Save ();
 		}
 
 		private void DoSelectTool (GridController.Mode mode)
@@ -107,6 +61,12 @@ namespace Blk
 
 		private void DoClose ()
 		{
+			// TODO: hmmm...
+			if (_searchOnlineObject.activeSelf) {
+				_searchOnlineObject.SetActive (false);
+				return;
+			}
+
 			Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
 		}
 
@@ -114,6 +74,35 @@ namespace Blk
 		private GameObject _searchOnlineObject;
 		[SerializeField]
 		private TableController _tableController;
+
+		private List <BlkEdit.BlockInfo> _infos;
+
+		private void DoLoad ()
+		{
+			_searchOnlineObject.SetActive (true);
+			_tableController.ClearEntries ();
+
+			_tableController.OnButtonClicked = OnButtonClicked;
+
+			_infos = WorkspaceController.GetLocalBlockInfos ();
+			for (int i = 0; i < _infos.Count; i++) {
+				_tableController.AddEntry (_infos [i].Id);
+			}
+		}
+
+		private void OnButtonClicked (string id)
+		{
+			Debug.Log ("BUTTON CLICKED: " + id);
+
+			for (int i = 0; i < _infos.Count; i++) {
+				if (_infos [i].Id == id) {
+					Main.WorkspaceController.Load (_infos [i]);
+
+					DoClose ();
+					break;
+				}
+			}
+		}
 
 		private void DoSearchOnline ()
 		{

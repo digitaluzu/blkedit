@@ -6,6 +6,9 @@ namespace Blk
 	[RequireComponent (typeof(UITable))]
 	public class TableController : Uzu.BaseBehaviour
 	{
+		public delegate void OnButtonClickedDelegate (string id);
+		public OnButtonClickedDelegate OnButtonClicked;
+
 		[SerializeField]
 		private Uzu.GameObjectPool _tableEntryPool;
 		[SerializeField]
@@ -29,6 +32,8 @@ namespace Blk
 			{
 				TableEntry entry = go.GetComponent <TableEntry> ();
 				entry.Text = id;
+				entry.Id = id;
+				entry.TEMP_TC = this;
 
 				_entries.Add(id, entry);
 			}

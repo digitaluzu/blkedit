@@ -21,6 +21,10 @@ namespace Blk
 			get { return _instance._gridController; }
 		}
 
+		public static WorkspaceController WorkspaceController {
+			get { return _instance._workspaceController; }
+		}
+
 		public static HttpRequestHandler HttpRequestHandler {
 			get { return _instance._httpRequestHandler; }
 		}
@@ -33,6 +37,7 @@ namespace Blk
 			// Singleton creation.
 			{
 				_commandMgr = new BlkEdit.CommandMgr ();
+				_workspaceController = new WorkspaceController ();
 
 				{
 					GameObject go = new GameObject ("HttpRequestHandler", typeof (HttpRequestHandler));
@@ -79,6 +84,8 @@ namespace Blk
 		
 		protected override void OnMainBegin2 ()
 		{
+			_workspaceController.New ();
+
 			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
 			//_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_OPTIONS);
 		}
@@ -101,6 +108,7 @@ namespace Blk
 
 		private BlkEdit.CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
+		private WorkspaceController _workspaceController;
 		private HttpRequestHandler _httpRequestHandler;
 		#endregion
 		
