@@ -15,11 +15,26 @@ namespace Blk
 		private const string BUTTON_ID_MODE_EYEDROP = "Button-ModeEyedrop";
 
 		[SerializeField]
+		private GameObject _scrollViewObject;
+		[SerializeField]
+		private TableController _tableController;
+		[SerializeField]
 		private UIButton _saveButton;
+		[SerializeField]
+		private DialogBox _dialogBox2;
+		
+		private List <BlkEdit.BlockInfo> _infos;
+
+		protected override void Awake ()
+		{
+			base.Awake ();
+
+			_tableController.OnButtonClicked = OnScrollViewButtonClicked;
+		}
 
 		public override void OnActivate ()
 		{
-			ShowScrollView (false);
+			HideScrollView ();
 
 			RefreshIcons ();
 		}
@@ -38,7 +53,7 @@ namespace Blk
 
 			case BUTTON_ID_CLOSE:
 				if (IsScrollViewVisible ()) {
-					ShowScrollView (false);
+					HideScrollView ();
 				}
 				else {
 					DoClose ();
@@ -71,17 +86,24 @@ namespace Blk
 
 		private void DoClose ()
 		{
+			HideScrollView ();
 			Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
 		}
 
 		private bool IsScrollViewVisible ()
 		{
-			return _searchOnlineObject.activeSelf;
+			return _scrollViewObject.activeSelf;
 		}
 
-		private void ShowScrollView (bool isVisible)
+		private void ShowScrollView (ScrollViewMode mode)
 		{
-			_searchOnlineObject.SetActive (isVisible);
+			_currentScrollViewMode = mode;
+			_scrollViewObject.SetActive (true);
+		}
+
+		private void HideScrollView ()
+		{
+			_scrollViewObject.SetActive (false);
 		}
 
 		private void RefreshIcons ()
@@ -89,27 +111,22 @@ namespace Blk
 			_saveButton.isEnabled = Main.WorkspaceController.NeedsSave;
 		}
 
-		[SerializeField]
-		private GameObject _searchOnlineObject;
-		[SerializeField]
-		private TableController _tableController;
-
-		private List <BlkEdit.BlockInfo> _infos;
-
 		private void DoSave ()
 		{
 			Main.WorkspaceController.Save ();
 		}
 
-		// TODO:
-		// - callback to know if workspace changes... save becomes required
+		private enum ScrollViewMode {
+			None,
+			LocalData,
+		}
+
+		private ScrollViewMode _currentScrollViewMode;
 		
 		private void DoShowLocalData ()
 		{
-			ShowScrollView (true);
+			ShowScrollView (ScrollViewMode.LocalData);
 			_tableController.ClearEntries ();
-
-			_tableController.OnButtonClicked = OnButtonClicked;
 
 			_infos = WorkspaceController.GetLocalBlockInfos ();
 			for (int i = 0; i < _infos.Count; i++) {
@@ -117,21 +134,51 @@ namespace Blk
 			}
 		}
 
-		private void OnButtonClicked (string id)
+		private void OnScrollViewButtonClicked (string id)
 		{
-			for (int i = 0; i < _infos.Count; i++) {
-				if (_infos [i].Id == id) {
-					Main.WorkspaceController.Load (_infos [i]);
+			if (Main.WorkspaceController.NeedsSave) {
+				_dialogBox2.Show ("Save changes?", "Yes", "No",
+				                  (buttonText) => {
+					if (buttonText == "Yes") {
+						Main.WorkspaceController.Save ();
+					}
 
+					BlkEdit.BlockInfo info;
+					if (GetInfo (id, out info)) {
+						Main.WorkspaceController.LoadForEditing (info);
+						DoClose ();
+					}
+				});
+				return;
+			}
+
+			{
+				BlkEdit.BlockInfo info;
+				if (GetInfo (id, out info)) {
+					Main.WorkspaceController.LoadForEditing (info);
 					DoClose ();
-					break;
 				}
 			}
 		}
 
+		private bool GetInfo (string id, out BlkEdit.BlockInfo outInfo)
+		{
+			for (int i = 0; i < _infos.Count; i++) {
+				BlkEdit.BlockInfo info = _infos [i];
+				if (info.Id == id) {
+					outInfo = info;
+					return true;
+				}
+			}
+
+			outInfo = new BlkEdit.BlockInfo ();
+			return false;
+		}
+
 		private void DoSearchOnline ()
 		{
-			_searchOnlineObject.SetActive (true);
+			/*
+			_scrollViewObject.SetActive (true);
 
 			_tableController.ClearEntries ();
 
@@ -140,6 +187,7 @@ namespace Blk
 			Main.HttpRequestHandler.OnGetImage = OnGetImage;
 
 			Main.HttpRequestHandler.GetMostRecentEntries();
+			*/
 		}
 
 		private void OnGetMostRecentEntries (HttpRequestHandler.DataInfo data)

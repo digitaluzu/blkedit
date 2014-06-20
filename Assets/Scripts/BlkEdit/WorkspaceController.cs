@@ -105,7 +105,7 @@ namespace Blk
 			_needsSave = false;
 		}
 
-		public void Load (BlkEdit.BlockInfo info)
+		public void LoadForEditing (BlkEdit.BlockInfo info)
 		{
 			{
 				byte[] data = Uzu.BlockIO.ReadFile (info.BlockDataPath);

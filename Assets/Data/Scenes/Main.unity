@@ -1001,7 +1001,6 @@ Transform:
   - {fileID: 593891368}
   - {fileID: 1669718382}
   - {fileID: 924767897}
-  - {fileID: 597349575}
   m_Father: {fileID: 1023327141}
   m_RootOrder: 0
 --- !u!114 &405125989
@@ -1833,7 +1832,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &597349575
 Transform:
   m_ObjectHideFlags: 0
@@ -1848,8 +1847,8 @@ Transform:
   - {fileID: 1618674773}
   - {fileID: 1485352282}
   - {fileID: 552367462}
-  m_Father: {fileID: 405125988}
-  m_RootOrder: 5
+  m_Father: {fileID: 1967947508}
+  m_RootOrder: 9
 --- !u!114 &597349576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2555,7 +2554,7 @@ MonoBehaviour:
   alwaysOnScreen: 0
   anchorOffset: 0
   renderQueue: 0
-  startingRenderQueue: 3009
+  startingRenderQueue: 3007
   mAlpha: 1
   mClipping: 3
   mClipRange: {x: -10, y: -170.000061, z: 469.000031, w: 332}
@@ -2943,7 +2942,7 @@ Prefab:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 405125988}
+    m_TransformParent: {fileID: 1967947508}
     m_Modifications:
     - target: {fileID: 400012, guid: 47f13849f0f51482e835fe627211eee0, type: 2}
       propertyPath: m_LocalPosition.x
@@ -2979,7 +2978,11 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 400012, guid: 47f13849f0f51482e835fe627211eee0, type: 2}
       propertyPath: m_RootOrder
-      value: 5
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100012, guid: 47f13849f0f51482e835fe627211eee0, type: 2}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 47f13849f0f51482e835fe627211eee0, type: 2}
@@ -4298,6 +4301,7 @@ Transform:
   - {fileID: 595625906}
   - {fileID: 1627589097}
   - {fileID: 480038343}
+  - {fileID: 597349575}
   m_Father: {fileID: 1023327141}
   m_RootOrder: 1
 --- !u!54 &1967947509
@@ -4326,9 +4330,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0ea173cd62de4e2db571a93f39ed211, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _saveButton: {fileID: 508326445}
-  _searchOnlineObject: {fileID: 737488867}
+  _scrollViewObject: {fileID: 737488867}
   _tableController: {fileID: 2101021076}
+  _saveButton: {fileID: 508326445}
+  _dialogBox2: {fileID: 597349576}
 --- !u!114 &1967947511
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4364,7 +4369,7 @@ MonoBehaviour:
   alwaysOnScreen: 0
   anchorOffset: 0
   renderQueue: 0
-  startingRenderQueue: 3005
+  startingRenderQueue: 3003
   mAlpha: 1
   mClipping: 0
   mClipRange: {x: 0, y: 0, z: 0, w: 0}
