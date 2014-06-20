@@ -38,12 +38,26 @@ namespace Blk
 			return infos;
 		}
 
+		private BlkEdit.BlockInfo? _activeBlockInfo;
 		private string _savePathBlockInfo;
-		private string _savePathBlockData;
 		private bool _needsSave;
 
 		public bool NeedsSave {
 			get { return _needsSave; }
+		}
+
+		public bool HasActiveBlockInfo {
+			get { return _activeBlockInfo.HasValue; }
+		}
+
+		public string ActiveBlockInfoId {
+			get {
+				if (_activeBlockInfo.HasValue) {
+					return _activeBlockInfo.Value.Id;
+				}
+
+				return string.Empty;
+			}
 		}
 
 		public WorkspaceController ()
@@ -59,6 +73,7 @@ namespace Blk
 		public void New ()
 		{
 			_needsSave = false;
+			_activeBlockInfo = null;
 
 			// Create directories for later writing.
 			System.IO.Directory.CreateDirectory(FileUtil.LocalModelPath);
@@ -71,23 +86,22 @@ namespace Blk
 				return;
 			}
 
-			if (string.IsNullOrEmpty(_savePathBlockData)) {
+			// Generate a new info if this is the first save.
+			if (!HasActiveBlockInfo) {
 				string baseFilePath = System.IO.Path.Combine (FileUtil.LocalModelPath, FileUtil.GetNewFileName ());
 				_savePathBlockInfo = baseFilePath + "." + BlkEdit.BlockInfo.Extension;
-				_savePathBlockData = baseFilePath + "." + Uzu.BlockFormat.Extension;
-			}
 
-			// Block info.
-			{
 				BlkEdit.BlockInfo info = new BlkEdit.BlockInfo ();
 				info.Id = BlkEdit.BlockInfo.GetNewId ();
 				info.Name = "Foo Name";
-				info.BlockDataPath = _savePathBlockData;
+				info.BlockDataPath = baseFilePath + "." + Uzu.BlockFormat.Extension;
 				info.ImagePath = "...";
 				if (!BlkEdit.BlockInfo.Save (_savePathBlockInfo, info)) {
 					Debug.LogError ("Error saving block info.");
 					return;
 				}
+
+				_activeBlockInfo = info;
 			}
 
 			// TODO: screenshot
@@ -99,7 +113,7 @@ namespace Blk
 				
 				Uzu.BlockContainer blocks = it.CurrentChunk.Blocks;
 				byte[] data = Uzu.BlockWriter.Write (blocks);
-				Uzu.BlockIO.WriteFile (_savePathBlockData, data);
+				Uzu.BlockIO.WriteFile (_activeBlockInfo.Value.BlockDataPath, data);
 			}
 
 			_needsSave = false;
@@ -107,6 +121,8 @@ namespace Blk
 
 		public void LoadForEditing (BlkEdit.BlockInfo info)
 		{
+			_activeBlockInfo = info;
+
 			{
 				byte[] data = Uzu.BlockIO.ReadFile (info.BlockDataPath);
 				Uzu.BlockFormat.Data blockData = Uzu.BlockReader.Read (data);

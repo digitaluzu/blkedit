@@ -132,6 +132,12 @@ namespace Blk
 			for (int i = 0; i < _infos.Count; i++) {
 				_tableController.AddEntry (_infos [i]);
 			}
+
+			// Disable the currently active entry.
+			if (Main.WorkspaceController.HasActiveBlockInfo) {
+				string currentId = Main.WorkspaceController.ActiveBlockInfoId;
+				_tableController.DisableEntry (currentId);
+			}
 		}
 
 		private void OnScrollViewButtonClicked (string id)

@@ -21,10 +21,22 @@ namespace Blk
 			get; set;
 		}
 
+		public void OnAddedToTable ()
+		{
+			_button.isEnabled = true;
+		}
+
+		public void Disable ()
+		{
+			_button.isEnabled = false;
+		}
+
 		[SerializeField]
 		private UILabel _label;
 		[SerializeField]
 		private UITexture _texture;
+		[SerializeField]
+		private UIButton _button;
 
 		[SerializeField]
 		private GameObject _buttonObject;

@@ -38,12 +38,12 @@ namespace Blk
 			}
 
 			_entries.Add (info.Id, entry);
+			entry.OnAddedToTable ();
 
 			// Refresh table immediately to prevent flicker.
 			_table.Reposition ();
 		}
 
-		// TODO:
 		public void UpdateEntry (string id, Texture2D texture)
 		{
 			TableEntry entry;
@@ -60,6 +60,17 @@ namespace Blk
 			}
 
 			_table.repositionNow = true;
+		}
+
+		public void DisableEntry (string id)
+		{
+			TableEntry entry;
+			if (!_entries.TryGetValue (id, out entry)) {
+				Debug.LogWarning ("Id not found: " + id);
+				return;
+			}
+
+			entry.Disable ();
 		}
 
 		public void ClearEntries ()

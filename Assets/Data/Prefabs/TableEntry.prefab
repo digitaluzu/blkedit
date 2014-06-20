@@ -251,6 +251,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _label: {fileID: 11400004}
   _texture: {fileID: 11400006}
+  _button: {fileID: 11400012}
   _buttonObject: {fileID: 100010}
 --- !u!114 &11400004
 MonoBehaviour:
