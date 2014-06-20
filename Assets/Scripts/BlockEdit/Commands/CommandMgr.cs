@@ -8,6 +8,9 @@ namespace BlkEdit
 	/// </summary>
 	public class CommandMgr
 	{
+		public delegate void OnCommandExecutedDelegate (BlkEdit.CommandInterface cmd);
+		public event OnCommandExecutedDelegate OnCommandExecuted;
+
 		public bool CanUndo {
 			get {
 				return
@@ -49,6 +52,7 @@ namespace BlkEdit
 				_undoCommands.Push (cmd);
 			}
 
+			TriggerCallback (cmd);
 			cmd.Do ();
 		}
 
@@ -61,6 +65,7 @@ namespace BlkEdit
 				CommandInterface cmd = _undoCommands.Pop ();
 				_redoCommands.Push (cmd);
 
+				TriggerCallback (cmd);
 				cmd.Undo ();
 			}
 		}
@@ -74,6 +79,7 @@ namespace BlkEdit
 				CommandInterface cmd = _redoCommands.Pop ();
 				_undoCommands.Push (cmd);
 
+				TriggerCallback (cmd);
 				cmd.Do ();
 			}
 		}
@@ -99,7 +105,14 @@ namespace BlkEdit
 			}
 
 			GroupCommand cmd = (GroupCommand)_undoCommands.Peek ();
-			cmd.IsActive = false;
+
+			// Remove empty command groups.
+			if (cmd.ChildCommandCount == 0) {
+				_undoCommands.Pop ();
+			}
+			else {
+				cmd.IsActive = false;
+			}
 		}
 
 		#region Implementation.
@@ -119,21 +132,22 @@ namespace BlkEdit
 			return false;
 		}
 
+		private void TriggerCallback (CommandInterface cmd)
+		{
+			if (OnCommandExecuted != null) {
+				OnCommandExecuted (cmd);
+			}
+		}
+
 		private class GroupCommand : CommandInterface
 		{
 			public bool IsActive {
 				get { return _isActive; }
-				set {
-					_isActive = value;
+				set { _isActive = value; }
+			}
 
-#if UNITY_EDITOR
-					if (_isActive == false) {
-						if (_childCmds.Count == 0) {
-							Debug.LogWarning ("Empty command group.");
-						}
-					}
-#endif
-				}
+			public int ChildCommandCount {
+				get { return _childCmds.Count; }
 			}
 
 			private bool _isActive;
