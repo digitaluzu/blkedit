@@ -192,8 +192,8 @@ namespace Blk
 			}
 			else if (ch >= 'A' && ch <= 'Z')
 			{
-				// Uppercase letters are only allowed after spaces (and apostrophes)
-				if (lastChar != ' ' && lastChar != '\'') return (char)(ch - 'A' + 'a');
+//				// Uppercase letters are only allowed after spaces (and apostrophes)
+//				if (lastChar != ' ' && lastChar != '\'') return (char)(ch - 'A' + 'a');
 				return ch;
 			}
 			else if (ch == '\'')
