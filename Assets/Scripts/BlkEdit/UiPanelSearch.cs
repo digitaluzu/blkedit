@@ -23,9 +23,14 @@ namespace Blk
 			_isScrollViewOpen = false;
 
 			// Setup callbacks.
-			Main.HttpRequestHandler.OnError += OnHttpError;
-			Main.HttpRequestHandler.OnGetMostRecentEntries += OnGetMostRecentEntries;
-//			Main.HttpRequestHandler.OnGetImage += OnGetImage;
+			{
+				Main.ScrollViewController.OnTableEntryButtonClicked += OnTableEntryButtonClicked;
+
+				Main.HttpRequestHandler.OnError += OnHttpError;
+				Main.HttpRequestHandler.OnGetMostRecentEntries += OnGetMostRecentEntries;
+	//			Main.HttpRequestHandler.OnGetImage += OnGetImage;
+				Main.HttpRequestHandler.OnGetBlockData += OnGetBlockData;
+			}
 
 			_infos = WorkspaceController.GetSavedBlockInfos ();
 		}
@@ -33,8 +38,12 @@ namespace Blk
 		public override void OnDeactivate ()
 		{
 			// Remove callbacks.
-			Main.HttpRequestHandler.OnError -= OnHttpError;
-			Main.HttpRequestHandler.OnGetMostRecentEntries -= OnGetMostRecentEntries;
+			{
+				Main.ScrollViewController.OnTableEntryButtonClicked -= OnTableEntryButtonClicked;
+
+				Main.HttpRequestHandler.OnError -= OnHttpError;
+				Main.HttpRequestHandler.OnGetMostRecentEntries -= OnGetMostRecentEntries;
+			}
 
 			Main.HttpRequestHandler.StopAllRequests ();
 		}
@@ -84,9 +93,8 @@ namespace Blk
 			Main.ScrollViewController.AttachToPanelAndShow (this);
 			Main.ScrollViewController.WindowTitleText = "Most Recent";
 			Main.ScrollViewController.NoDataText = "No Models";
-//			Main.ScrollViewController.DisabledEntryId = Main.WorkspaceController.ActiveBlockInfoId;
+			Main.ScrollViewController.DisabledEntryId = Main.WorkspaceController.ActiveBlockInfoId;
 			Main.ScrollViewController.EntryButtonDefaultText = "Get";
-			Main.ScrollViewController.OnTableEntryButtonClicked += OnTableEntryButtonClicked;
 
 			Main.HttpRequestHandler.GetMostRecentEntries();
 		}
@@ -104,14 +112,20 @@ namespace Blk
 
 		private void OnTableEntryButtonClicked (string id, string buttonText)
 		{
-			Debug.Log (buttonText);
-
-			// TODO: 
+			if (buttonText == "Get") {
+				Main.ScrollViewController.SetEntryButtonText (id, "...");
+				Main.HttpRequestHandler.GetBlockData (id);
+			}
+			else if (buttonText == "View") {
+				BlkEdit.BlockInfo info;
+				GetInfo (id, out info);
+				Main.WorkspaceController.LoadForViewing (info);
+			}
 		}
 
 		private void OnHttpError (int errorCode, string errorText)
 		{
-			Debug.LogError ("HTTP Error: " + errorCode + "..." + errorText);
+			Debug.LogError ("HTTP Error: " + errorCode + " - " + errorText);
 		}
 
 		private void OnGetMostRecentEntries (BlkEdit.BlockInfo info)
@@ -126,7 +140,49 @@ namespace Blk
 				Main.ScrollViewController.SetEntryButtonText (info.Id, "Get");
 			}
 
+			_infos.Add (info);
+
 			//	Main.HttpRequestHandler.GetImage (data.id, data.imageURL);
+		}
+
+		private void OnGetBlockData (string id, byte[] data)
+		{
+			Debug.Log ("Get block data: " + id);
+			Debug.Log ("Length: " + data.Length);
+
+			// TODO: verify data integrity in HTTP request? (magic #) before returning
+			Uzu.BlockFormat.Data blockData = Uzu.BlockReader.Read (data);
+
+			// get path... write to path... store path in blki... write blki
+			string path = System.IO.Path.Combine (FileUtil.SavedModelPath, id);
+			string blockDataPath = path + "." + Uzu.BlockFormat.Extension;
+			string blockInfoPath = path + "." + BlkEdit.BlockInfo.Extension;
+			Uzu.BlockIO.WriteFile (blockDataPath, data);
+
+			BlkEdit.BlockInfo info;
+			if (!GetInfo (id, out info)) {
+				Debug.LogError ("omg");
+				return;
+			}
+
+			info.BlockDataPath = blockDataPath;
+
+			BlkEdit.BlockInfo.Save (blockInfoPath, info);
+
+			Main.ScrollViewController.SetEntryButtonText (id, "View");
+		}
+
+		private bool GetInfo (string id, out BlkEdit.BlockInfo info)
+		{
+			for (int i = 0; i < _infos.Count; i++) {
+				info = _infos [i];
+				if (info.Id == id) {
+					return true;
+				}
+			}
+
+			info = new BlkEdit.BlockInfo ();
+			return false;
 		}
 
 		private bool HasSavedInfo (string id)

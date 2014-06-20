@@ -93,8 +93,8 @@ namespace Blk
 		{
 			_workspaceController.New ();
 
-//			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
-			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_OPTIONS);
+			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
+//			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_OPTIONS);
 		}
 
 		protected override void OnMainEnd ()

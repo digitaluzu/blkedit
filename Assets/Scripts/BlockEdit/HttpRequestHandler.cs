@@ -18,7 +18,10 @@ namespace BlkEdit
 		public event OnGetMostRecentEntriesDelegate OnGetMostRecentEntries;
 
 //		public delegate void OnGetImageDelegate (string id, Texture2D texture);
-//		public OnGetImageDelegate OnGetImage;
+//		public event OnGetImageDelegate OnGetImage;
+
+		public delegate void OnGetBlockDataDelegate (string id, byte[] bytes);
+		public event OnGetBlockDataDelegate OnGetBlockData;
 
 		public void StopAllRequests ()
 		{
@@ -48,6 +51,11 @@ namespace BlkEdit
 //
 //			StartCoroutine (DoGetImage(id, imageURL));
 //		}
+
+		public void GetBlockData (string id)
+		{
+			StartCoroutine (DoGetBlockData (id));
+		}
 
 		#region Implementation.
 		private IEnumerator DoGetMostRecentEntries ()
@@ -89,6 +97,21 @@ namespace BlkEdit
 			}
 
 			return true;
+		}
+
+		private IEnumerator DoGetBlockData (string id)
+		{
+			string url = SERVER_URL + "/models/block_data/" + id;
+			
+			WWW www = new WWW (url);
+			yield return www;
+			
+			if (!string.IsNullOrEmpty(www.error)) {
+				DoErrorCallback (www.error);
+				yield break;
+			}
+
+			OnGetBlockData (id, www.bytes);
 		}
 
 		private void DoErrorCallback (string errorText)

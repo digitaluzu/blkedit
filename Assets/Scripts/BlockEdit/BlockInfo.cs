@@ -27,9 +27,14 @@ namespace BlkEdit
 
 			{
 				dict.Add ("id", info.Id);
+
 				dict.Add ("name", info.Name);
 				dict.Add ("blockDataPath", info.BlockDataPath);
 				dict.Add ("imagePath", info.ImagePath);
+//				dict.Add ("imageURL", info.ImageURL);
+				dict.Add ("downloadCount", info.DownloadCount);
+				dict.Add ("likeCount", info.LikeCount);
+				dict.Add ("version", info.Version);
 			}
 
 			string jsonStr = Uzu.MiniJSON.Serialize (dict);
