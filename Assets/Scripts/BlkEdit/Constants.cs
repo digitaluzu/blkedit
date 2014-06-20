@@ -6,6 +6,9 @@ namespace Blk
 	{
 		public const string PANEL_CANVAS = "Panel-Canvas";
 		public const string PANEL_OPTIONS = "Panel-Options";
+		public const string PANEL_SEARCH = "Panel-Search";
+		
+		public const string PANEL_MY_DATA_VIEW = "Panel-MyDataView";
 	}
 	
 	public static class Constants

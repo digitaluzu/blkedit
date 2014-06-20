@@ -28,6 +28,14 @@ namespace Blk
 		public static HttpRequestHandler HttpRequestHandler {
 			get { return _instance._httpRequestHandler; }
 		}
+
+		public static DialogBox DialogBox2 {
+			get { return _instance._dialogBox2; }
+		}
+
+		public static ScrollViewController ScrollViewController {
+			get { return _instance._scrollViewController; }
+		}
 		
 		#region Overrided methods.
 		protected override void OnMainBegin ()
@@ -106,6 +114,10 @@ namespace Blk
 		private Uzu.UiPanelMgr _panelMgr;
 		[SerializeField]
 		private Material _blockMaterial;
+		[SerializeField]
+		private DialogBox _dialogBox2;
+		[SerializeField]
+		private ScrollViewController _scrollViewController;
 
 		private BlkEdit.CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;

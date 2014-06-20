@@ -3,14 +3,12 @@ using System.Collections.Generic;
 
 namespace Blk
 {
-	public class UiPanelOptions : Uzu.UiPanel
+	public class UiPanelOptions : UiPanelBaseView
 	{
 		private const string BUTTON_ID_SAVE = "Button-Save";
-		private const string BUTTON_ID_LOAD = "Button-Load";
+		private const string BUTTON_ID_MY_DATA = "Button-Load";
 		private const string BUTTON_ID_CLOSE = "Button-Close";
 		private const string BUTTON_ID_SEARCH = "Button-Search";
-		private const string BUTTON_ID_SEARCH_BY_NAME = "Button-Search-ByName";
-		private const string BUTTON_ID_SEARCH_MOST_RECENT = "Button-Search-MostRecent";
 		private const string BUTTON_ID_SAVED = "Button-Saved";
 
 		private const string BUTTON_ID_MODE_ADD = "Button-ModeAdd";
@@ -18,33 +16,14 @@ namespace Blk
 		private const string BUTTON_ID_MODE_EYEDROP = "Button-ModeEyedrop";
 
 		[SerializeField]
-		private GameObject _scrollViewObject;
-		[SerializeField]
-		private UILabel _scrollViewTitle;
-		[SerializeField]
-		private TableController _tableController;
-		[SerializeField]
 		private UIButton _saveButton;
-		[SerializeField]
-		private DialogBox _dialogBox2;
-		[SerializeField]
-		private GameObject _searchOptionsObject;
-		
-		private List <BlkEdit.BlockInfo> _infos;
 
-		protected override void Awake ()
-		{
-			base.Awake ();
-
-			_tableController.OnButtonClicked = OnScrollViewButtonClicked;
-
-			_searchOptionsObject.SetActive (false);
+		protected override string TransitionPanelIdOnClose {
+			get { return PanelIds.PANEL_CANVAS; }
 		}
 
 		public override void OnActivate ()
 		{
-			HideScrollView ();
-
 			RefreshIcons ();
 		}
 
@@ -56,29 +35,12 @@ namespace Blk
 				DoSave ();
 				break;
 
-			case BUTTON_ID_LOAD:
-				DoShowLocalData ();
-				break;
-
-			case BUTTON_ID_CLOSE:
-				if (IsScrollViewVisible ()) {
-					HideScrollView ();
-				}
-				else {
-					DoClose ();
-				}
+			case BUTTON_ID_MY_DATA:
+				Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_MY_DATA_VIEW);
 				break;
 
 			case BUTTON_ID_SEARCH:
-				_searchOptionsObject.SetActive (true);
-				break;
-
-			case BUTTON_ID_SEARCH_BY_NAME:
-
-				break;
-
-			case BUTTON_ID_SEARCH_MOST_RECENT:
-
+				Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_SEARCH);
 				break;
 
 			case BUTTON_ID_SAVED:
@@ -96,6 +58,10 @@ namespace Blk
 			case BUTTON_ID_MODE_EYEDROP:
 				DoSelectTool (GridController.Mode.EyeDropper);
 				break;
+
+			default:
+				base.OnClick (widget);
+				break;
 			}
 		}
 
@@ -103,30 +69,6 @@ namespace Blk
 		{
 			Main.GridController.CurrentMode = mode;
 			DoClose ();
-		}
-
-		private void DoClose ()
-		{
-			HideScrollView ();
-			Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
-		}
-
-		private bool IsScrollViewVisible ()
-		{
-			return _scrollViewObject.activeSelf;
-		}
-
-		private void ShowScrollView (ScrollViewMode mode)
-		{
-			_currentScrollViewMode = mode;
-			_scrollViewObject.SetActive (true);
-
-			_scrollViewTitle.text = mode.ToString ();
-		}
-
-		private void HideScrollView ()
-		{
-			_scrollViewObject.SetActive (false);
 		}
 
 		private void RefreshIcons ()
@@ -149,35 +91,9 @@ namespace Blk
 			}
 		}
 
-		private enum ScrollViewMode {
-			None,
-			LocalData,
-			SavedData,
-		}
-
-		private ScrollViewMode _currentScrollViewMode;
-		
-		private void DoShowLocalData ()
-		{
-			ShowScrollView (ScrollViewMode.LocalData);
-			_tableController.ClearEntries ();
-
-			_infos = WorkspaceController.GetLocalBlockInfos ();
-			for (int i = 0; i < _infos.Count; i++) {
-				_tableController.AddEntry (_infos [i]);
-			}
-
-			// TODO: if no infos, show NO DATA label
-
-			// Disable the currently active entry.
-			if (Main.WorkspaceController.HasActiveBlockInfo) {
-				string currentId = Main.WorkspaceController.ActiveBlockInfoId;
-				_tableController.DisableEntry (currentId);
-			}
-		}
-
 		private void DoShowSavedData ()
 		{
+			/*
 			ShowScrollView (ScrollViewMode.SavedData);
 			_tableController.ClearEntries ();
 			
@@ -192,48 +108,7 @@ namespace Blk
 			if (Main.WorkspaceController.HasActiveBlockInfo) {
 				string currentId = Main.WorkspaceController.ActiveBlockInfoId;
 				_tableController.DisableEntry (currentId);
-			}
-		}
-
-		private void OnScrollViewButtonClicked (string id)
-		{
-			if (Main.WorkspaceController.NeedsSave) {
-				_dialogBox2.Show ("Save changes?", "Yes", "No",
-				                  (buttonText) => {
-					if (buttonText == "Yes") {
-						DoSave ();
-					}
-
-					BlkEdit.BlockInfo info;
-					if (GetInfo (id, out info)) {
-						Main.WorkspaceController.LoadForEditing (info);
-						DoClose ();
-					}
-				});
-				return;
-			}
-
-			{
-				BlkEdit.BlockInfo info;
-				if (GetInfo (id, out info)) {
-					Main.WorkspaceController.LoadForEditing (info);
-					DoClose ();
-				}
-			}
-		}
-
-		private bool GetInfo (string id, out BlkEdit.BlockInfo outInfo)
-		{
-			for (int i = 0; i < _infos.Count; i++) {
-				BlkEdit.BlockInfo info = _infos [i];
-				if (info.Id == id) {
-					outInfo = info;
-					return true;
-				}
-			}
-
-			outInfo = new BlkEdit.BlockInfo ();
-			return false;
+			}*/
 		}
 
 		private void DoSearchOnline ()
@@ -264,7 +139,7 @@ namespace Blk
 		{
 			Debug.Log ("OnGetImage");
 
-			_tableController.UpdateEntry (id, texture);
+//			_tableController.UpdateEntry (id, texture);
 		}
 	}
 }

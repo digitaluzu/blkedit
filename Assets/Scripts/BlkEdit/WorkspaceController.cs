@@ -1,11 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace Blk
 {
 	public class WorkspaceController : Uzu.BaseBehaviour
 	{
-		public static List <BlkEdit.BlockInfo> GetLocalBlockInfos ()
+		public static List <BlkEdit.BlockInfo> GetMyBlockInfos ()
 		{
 			return GetBlockInfos (FileUtil.LocalModelPath);
 		}
