@@ -37,7 +37,6 @@ namespace Blk
 			// Singleton creation.
 			{
 				_commandMgr = new BlkEdit.CommandMgr ();
-				_workspaceController = new WorkspaceController ();
 
 				{
 					GameObject go = new GameObject ("HttpRequestHandler", typeof (HttpRequestHandler));
@@ -86,8 +85,8 @@ namespace Blk
 		{
 			_workspaceController.New ();
 
-			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
-			//_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_OPTIONS);
+//			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
+			_panelMgr.ChangeCurrentPanel (PanelIds.PANEL_OPTIONS);
 		}
 
 		protected override void OnMainEnd ()
@@ -97,6 +96,8 @@ namespace Blk
 
 		[SerializeField]
 		private GridController _gridController;
+		[SerializeField]
+		private WorkspaceController _workspaceController;
 		[SerializeField]
 		private Transform _modelViewPivotXform;
 		[SerializeField]
@@ -108,7 +109,6 @@ namespace Blk
 
 		private BlkEdit.CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
-		private WorkspaceController _workspaceController;
 		private HttpRequestHandler _httpRequestHandler;
 		#endregion
 		

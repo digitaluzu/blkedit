@@ -1752,7 +1752,11 @@ MonoBehaviour:
   caretColor: {r: 1, g: 1, b: 1, a: .800000012}
   selectionColor: {r: 1, g: .874509811, b: .552941203, a: .5}
   onSubmit: []
-  onChange: []
+  onChange:
+  - mTarget: {fileID: 1097729353}
+    mMethodName: OnModelNameChange
+    mParameters: []
+    oneShot: 0
   mValue: 
 --- !u!65 &558122001
 BoxCollider:
@@ -1802,7 +1806,7 @@ MonoBehaviour:
   autoResizeBoxCollider: 1
   hideIfOffScreen: 0
   keepAspectRatio: 0
-  aspectRatio: 120
+  aspectRatio: 6
   mType: 1
   mFillDirection: 4
   mFillAmount: 1
@@ -3181,6 +3185,46 @@ Transform:
   - {fileID: 926524610}
   m_Father: {fileID: 226647724}
   m_RootOrder: 0
+--- !u!1 &1097729351
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1097729352}
+  - 114: {fileID: 1097729353}
+  m_Layer: 0
+  m_Name: WorkspaceController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1097729352
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1097729351}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1873161010}
+  m_RootOrder: 0
+--- !u!114 &1097729353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1097729351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab6f9a6b75dce47b9bf75642dcb96f34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _modelNameInput: {fileID: 558122000}
 --- !u!1 &1126105880
 GameObject:
   m_ObjectHideFlags: 0
@@ -4683,7 +4727,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1097729352}
   m_Father: {fileID: 0}
   m_RootOrder: 1
 --- !u!114 &1873161011
@@ -4698,6 +4743,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _gridController: {fileID: 1783545021}
+  _workspaceController: {fileID: 1097729353}
   _modelViewPivotXform: {fileID: 1617873657}
   _spinRegion: {fileID: 1699573172}
   _panelMgr: {fileID: 226647726}
@@ -4921,7 +4967,6 @@ MonoBehaviour:
   _tableController: {fileID: 2101021076}
   _saveButton: {fileID: 508326445}
   _dialogBox2: {fileID: 597349576}
-  _titleNameInput: {fileID: 558122000}
 --- !u!114 &1967947511
 MonoBehaviour:
   m_ObjectHideFlags: 0

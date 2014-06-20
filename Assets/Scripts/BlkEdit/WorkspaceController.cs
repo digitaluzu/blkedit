@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Blk
 {
-	public class WorkspaceController
+	public class WorkspaceController : Uzu.BaseBehaviour
 	{
 		public static List <BlkEdit.BlockInfo> GetLocalBlockInfos ()
 		{
@@ -38,6 +38,9 @@ namespace Blk
 			return infos;
 		}
 
+		[SerializeField]
+		private UIInput _modelNameInput;
+
 		private BlkEdit.BlockInfo? _activeBlockInfo;
 		private string _savePathBlockInfo;
 		private bool _needsSave;
@@ -60,9 +63,12 @@ namespace Blk
 			}
 		}
 
-		public WorkspaceController ()
+		protected override void Awake ()
 		{
+			base.Awake ();
+
 			Main.CommandMgr.OnCommandExecuted += OnCommandExecuted;
+			_modelNameInput.onValidate = OnModelNameValidate;
 		}
 
 		private void OnCommandExecuted (BlkEdit.CommandInterface cmd)
@@ -93,7 +99,7 @@ namespace Blk
 
 				BlkEdit.BlockInfo info = new BlkEdit.BlockInfo ();
 				info.Id = BlkEdit.BlockInfo.GetNewId ();
-				info.Name = "Foo Name";
+				info.Name = _modelNameInput.value;
 				info.BlockDataPath = baseFilePath + "." + Uzu.BlockFormat.Extension;
 				info.ImagePath = "...";
 				if (!BlkEdit.BlockInfo.Save (_savePathBlockInfo, info)) {
@@ -122,6 +128,11 @@ namespace Blk
 		public void LoadForEditing (BlkEdit.BlockInfo info)
 		{
 			_activeBlockInfo = info;
+
+			{
+				Debug.Log (info.Name);
+				_modelNameInput.value = info.Name;
+			}
 
 			{
 				byte[] data = Uzu.BlockIO.ReadFile (info.BlockDataPath);
@@ -158,5 +169,50 @@ namespace Blk
 				Main.GridController.RebuildGrid (blockData);
 			}
 		}
+
+		#region Implementation.
+		/// <summary>
+		/// Callback for when the text within the model name UI input changes.
+		/// </summary>
+		public void OnModelNameChange ()
+		{
+			_needsSave = true;
+		}
+
+		private char OnModelNameValidate (string text, int pos, char ch)
+		{
+			char lastChar = (text.Length > 0) ? text[Mathf.Clamp(pos, 0, text.Length - 1)] : ' ';
+			char nextChar = (text.Length > 0) ? text[Mathf.Clamp(pos + 1, 0, text.Length - 1)] : '\n';
+			
+			if (ch >= 'a' && ch <= 'z')
+			{
+				// Space followed by a letter -- make sure it's capitalized
+				if (lastChar == ' ') return (char)(ch - 'a' + 'A');
+				return ch;
+			}
+			else if (ch >= 'A' && ch <= 'Z')
+			{
+				// Uppercase letters are only allowed after spaces (and apostrophes)
+				if (lastChar != ' ' && lastChar != '\'') return (char)(ch - 'A' + 'a');
+				return ch;
+			}
+			else if (ch == '\'')
+			{
+				// Don't allow more than one apostrophe
+				if (lastChar != ' ' && lastChar != '\'' && nextChar != '\'' && !text.Contains("'")) return ch;
+			}
+			else if (ch == ' ')
+			{
+				// Don't allow more than one space in a row
+				if (lastChar != ' ' && lastChar != '\'' && nextChar != ' ' && nextChar != '\'') return ch;
+			}
+			else if (ch >= '0' && ch <= '9')
+			{
+				return ch;
+			}
+			
+			return (char)0;
+		}
+		#endregion
 	}
 }
