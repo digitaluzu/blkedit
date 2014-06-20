@@ -22,6 +22,9 @@ namespace Blk
 		private UIButton _saveButton;
 		[SerializeField]
 		private DialogBox _dialogBox2;
+
+		[SerializeField]
+		private UIInput _titleNameInput;
 		
 		private List <BlkEdit.BlockInfo> _infos;
 
@@ -30,6 +33,7 @@ namespace Blk
 			base.Awake ();
 
 			_tableController.OnButtonClicked = OnScrollViewButtonClicked;
+			_titleNameInput.onValidate = TitleNameValidator;
 		}
 
 		public override void OnActivate ()
@@ -165,6 +169,41 @@ namespace Blk
 					DoClose ();
 				}
 			}
+		}
+
+		private char TitleNameValidator (string text, int pos, char ch)
+		{
+			char lastChar = (text.Length > 0) ? text[Mathf.Clamp(pos, 0, text.Length - 1)] : ' ';
+			char nextChar = (text.Length > 0) ? text[Mathf.Clamp(pos + 1, 0, text.Length - 1)] : '\n';
+			
+			if (ch >= 'a' && ch <= 'z')
+			{
+				// Space followed by a letter -- make sure it's capitalized
+				if (lastChar == ' ') return (char)(ch - 'a' + 'A');
+				return ch;
+			}
+			else if (ch >= 'A' && ch <= 'Z')
+			{
+				// Uppercase letters are only allowed after spaces (and apostrophes)
+				if (lastChar != ' ' && lastChar != '\'') return (char)(ch - 'A' + 'a');
+				return ch;
+			}
+			else if (ch == '\'')
+			{
+				// Don't allow more than one apostrophe
+				if (lastChar != ' ' && lastChar != '\'' && nextChar != '\'' && !text.Contains("'")) return ch;
+			}
+			else if (ch == ' ')
+			{
+				// Don't allow more than one space in a row
+				if (lastChar != ' ' && lastChar != '\'' && nextChar != ' ' && nextChar != '\'') return ch;
+			}
+			else if (ch >= '0' && ch <= '9')
+			{
+				return ch;
+			}
+
+			return (char)0;
 		}
 
 		private bool GetInfo (string id, out BlkEdit.BlockInfo outInfo)
