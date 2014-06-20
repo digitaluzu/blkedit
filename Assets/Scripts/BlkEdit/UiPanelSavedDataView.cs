@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace Blk
@@ -13,7 +13,7 @@ namespace Blk
 		
 		public override void OnActivate ()
 		{
-			Main.ScrollViewController.AttachToPanel (this);
+			Main.ScrollViewController.AttachToPanelAndShow (this);
 			Main.ScrollViewController.WindowTitleText = "Saved Models";
 			Main.ScrollViewController.NoDataText = "No Models";
 			Main.ScrollViewController.DisabledEntryId = Main.WorkspaceController.ActiveBlockInfoId;

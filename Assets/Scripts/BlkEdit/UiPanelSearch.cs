@@ -3,20 +3,19 @@ using System.Collections;
 
 namespace Blk
 {
-	public class UiPanelSearch : UiPanelBaseView
+	public class UiPanelSearch : Uzu.UiPanel
 	{
+		private const string BUTTON_ID_CLOSE = "Button-Close";
 		private const string BUTTON_ID_SEARCH_BY_NAME = "Button-Search-ByName";
 		private const string BUTTON_ID_SEARCH_MOST_DOWNLOADED = "Button-SearchMostDownloaded";
 		private const string BUTTON_ID_SEARCH_MOST_LIKED = "Button-SearchMostLiked";
 		private const string BUTTON_ID_SEARCH_MOST_RECENT = "Button-SearchMostRecent";
 
-		protected override string TransitionPanelIdOnClose {
-			get { return PanelIds.PANEL_OPTIONS; }
-		}
+		private bool _isScrollViewOpen;
 
 		public override void OnActivate ()
 		{
-
+			_isScrollViewOpen = false;
 		}
 
 		public override void OnDeactivate ()
@@ -42,8 +41,8 @@ namespace Blk
 				DoSearchMostRecent ();
 				break;
 
-			default:
-				base.OnClick (widget);
+			case BUTTON_ID_CLOSE:
+				DoClose ();
 				break;
 			}
 		}
@@ -56,9 +55,26 @@ namespace Blk
 //			Main.HttpRequestHandler.OnGetImage = OnGetImage;
 		}
 
+		private void DoSearchByName ()
+		{
+			_isScrollViewOpen = true;
+		}
+
+		private void DoSearchMostDownloaded ()
+		{
+			_isScrollViewOpen = true;
+		}
+
+		private void DoSearchMostLiked ()
+		{
+			_isScrollViewOpen = true;
+		}
+
 		private void DoSearchMostRecent ()
 		{
-			Main.ScrollViewController.AttachToPanel (this);
+			_isScrollViewOpen = true;
+
+			Main.ScrollViewController.AttachToPanelAndShow (this);
 			Main.ScrollViewController.WindowTitleText = "Most Recent";
 			Main.ScrollViewController.NoDataText = "No Models";
 //			Main.ScrollViewController.DisabledEntryId = Main.WorkspaceController.ActiveBlockInfoId;
@@ -66,6 +82,17 @@ namespace Blk
 //			Main.ScrollViewController.OnTableEntryButtonClicked += OnTableEntryButtonClicked;
 
 			Main.HttpRequestHandler.GetMostRecentEntries();
+		}
+
+		private void DoClose ()
+		{
+			if (_isScrollViewOpen) {
+				Main.ScrollViewController.Hide ();
+				_isScrollViewOpen = false;
+			}
+			else {
+				Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_OPTIONS);
+			}
 		}
 
 		private void OnGetMostRecentEntries (HttpRequestHandler.DataInfo data)

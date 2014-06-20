@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace Blk
@@ -26,7 +26,7 @@ namespace Blk
 			get; set;
 		}
 
-		public void AttachToPanel (Uzu.UiPanel panel)
+		public void AttachToPanelAndShow (Uzu.UiPanel panel)
 		{
 			this.gameObject.SetActive (true);
 			
@@ -40,6 +40,11 @@ namespace Blk
 			}
 
 			RequestRefresh ();
+		}
+
+		public void Hide ()
+		{
+			this.gameObject.SetActive (false);
 		}
 		
 		public void AppendEntries (List <BlkEdit.BlockInfo> infos)

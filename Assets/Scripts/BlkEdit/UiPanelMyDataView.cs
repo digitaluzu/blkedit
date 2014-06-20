@@ -13,7 +13,7 @@ namespace Blk
 
 		public override void OnActivate ()
 		{
-			Main.ScrollViewController.AttachToPanel (this);
+			Main.ScrollViewController.AttachToPanelAndShow (this);
 			Main.ScrollViewController.WindowTitleText = "My Models";
 			Main.ScrollViewController.NoDataText = "No Models";
 			Main.ScrollViewController.DisabledEntryId = Main.WorkspaceController.ActiveBlockInfoId;
