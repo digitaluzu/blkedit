@@ -135,6 +135,12 @@ namespace Blk
 			_needsSave = false;
 		}
 
+		public void LoadForViewing (BlkEdit.BlockInfo info)
+		{
+			// TODO:
+			LoadForEditing (info);
+		}
+
 		public void LoadForEditing (BlkEdit.BlockInfo info)
 		{
 			_activeBlockInfo = info;

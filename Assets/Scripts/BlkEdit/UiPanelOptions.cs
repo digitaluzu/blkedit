@@ -6,10 +6,9 @@ namespace Blk
 	public class UiPanelOptions : UiPanelBaseView
 	{
 		private const string BUTTON_ID_SAVE = "Button-Save";
-		private const string BUTTON_ID_MY_DATA = "Button-Load";
-		private const string BUTTON_ID_CLOSE = "Button-Close";
+		private const string BUTTON_ID_MY_DATA = "Button-MyData";
+		private const string BUTTON_ID_SAVED_DATA = "Button-SavedData";
 		private const string BUTTON_ID_SEARCH = "Button-Search";
-		private const string BUTTON_ID_SAVED = "Button-Saved";
 
 		private const string BUTTON_ID_MODE_ADD = "Button-ModeAdd";
 		private const string BUTTON_ID_MODE_ERASE = "Button-ModeErase";
@@ -39,12 +38,12 @@ namespace Blk
 				Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_MY_DATA_VIEW);
 				break;
 
-			case BUTTON_ID_SEARCH:
-				Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_SEARCH);
+			case BUTTON_ID_SAVED_DATA:
+				Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_SAVED_DATA_VIEW);
 				break;
 
-			case BUTTON_ID_SAVED:
-				DoShowSavedData ();
+			case BUTTON_ID_SEARCH:
+				Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_SEARCH);
 				break;
 
 			case BUTTON_ID_MODE_ADD:
@@ -89,26 +88,6 @@ namespace Blk
 			else if (!Main.WorkspaceController.NeedsSave && _saveButton.isEnabled) {
 				_saveButton.isEnabled = false;
 			}
-		}
-
-		private void DoShowSavedData ()
-		{
-			/*
-			ShowScrollView (ScrollViewMode.SavedData);
-			_tableController.ClearEntries ();
-			
-			_infos = WorkspaceController.GetSavedBlockInfos ();
-			for (int i = 0; i < _infos.Count; i++) {
-				_tableController.AddEntry (_infos [i]);
-			}
-
-			// TODO: if no infos, show NO DATA label
-			
-			// Disable the currently active entry.
-			if (Main.WorkspaceController.HasActiveBlockInfo) {
-				string currentId = Main.WorkspaceController.ActiveBlockInfoId;
-				_tableController.DisableEntry (currentId);
-			}*/
 		}
 
 		private void DoSearchOnline ()

@@ -31,9 +31,13 @@ namespace Blk
 			this.gameObject.SetActive (true);
 			
 			CachedXform.parent = panel.CachedXform;
-			
-			// Clear when attaching to a new panel.
-			ClearEntries ();
+			CachedXform.localScale = Vector3.one;
+
+			// Reset.
+			{
+				ClearEntries ();
+				DisabledEntryId = string.Empty;
+			}
 
 			RequestRefresh ();
 		}

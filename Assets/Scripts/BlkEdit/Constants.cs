@@ -9,6 +9,7 @@ namespace Blk
 		public const string PANEL_SEARCH = "Panel-Search";
 		
 		public const string PANEL_MY_DATA_VIEW = "Panel-MyDataView";
+		public const string PANEL_SAVED_DATA_VIEW = "Panel-SavedDataView";
 	}
 	
 	public static class Constants
