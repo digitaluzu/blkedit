@@ -22,8 +22,19 @@ namespace Blk
 			get; set;
 		}
 
-		public string EntryButtonText {
+		public string EntryButtonDefaultText {
 			get; set;
+		}
+
+		public void SetEntryButtonText (string id, string text)
+		{
+			TableEntry entry;
+			if (_entries.TryGetValue (id, out entry)) {
+				entry.ButtonText = text;
+			}
+			else {
+				Debug.LogWarning ("Id not found: " + id);
+			}
 		}
 
 		public void AttachToPanelAndShow (Uzu.UiPanel panel)
@@ -71,9 +82,9 @@ namespace Blk
 			
 			// Set it up.
 			{
-				entry.Text = info.Name;
+				entry.NameText = info.Name;
 				entry.Id = info.Id;
-				entry.ButtonText = EntryButtonText;
+				entry.ButtonText = EntryButtonDefaultText;
 				entry.Button.isEnabled = true;
 				UIEventListener.Get(entry.Button.gameObject).onClick += OnTableEntryButtonClickedImpl;
 			}

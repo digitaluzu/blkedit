@@ -2,22 +2,28 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Blk
+namespace BlkEdit
 {
-	// TODO: post requests should use API key
-	// TODO: error handling... pass error / result via callback so caller can handle with dialogs and things.
-	// TODO: parse error code from error string (if possible)... WWW class doesn't give a nicely formatted error code, so we have to do it ourself.
+	// TODO: count + offset + paging
 	public class HttpRequestHandler : Uzu.BaseBehaviour
 	{
 		public const string API_VERSION = "v0";
 		public const string PORT = "3000";
 		public const string SERVER_URL = "http://localhost:" + PORT + "/api/" + API_VERSION;
 
-		public delegate void OnGetMostRecentEntriesDelegate (DataInfo data);
-		public OnGetMostRecentEntriesDelegate OnGetMostRecentEntries;
+		public delegate void OnErrorDelegate (int httpErrorCode, string errorText);
+		public event OnErrorDelegate OnError;
 
-		public delegate void OnGetImageDelegate (string id, Texture2D texture);
-		public OnGetImageDelegate OnGetImage;
+		public delegate void OnGetMostRecentEntriesDelegate (BlockInfo data);
+		public event OnGetMostRecentEntriesDelegate OnGetMostRecentEntries;
+
+//		public delegate void OnGetImageDelegate (string id, Texture2D texture);
+//		public OnGetImageDelegate OnGetImage;
+
+		public void StopAllRequests ()
+		{
+			StopAllCoroutines ();
+		}
 		
 		public void GetMostRecentEntries ()
 		{
@@ -31,111 +37,101 @@ namespace Blk
 			StartCoroutine (DoGetMostRecentEntries());
 		}
 
-		public void GetImage (string id, string imageURL)
-		{
-#if UNITY_EDITOR
-			if (OnGetImage == null) {
-				Debug.LogError ("Callback is null.");
-				return;
-			}
-#endif
-
-			StartCoroutine (DoGetImage(id, imageURL));
-		}
+//		public void GetImage (string id, string imageURL)
+//		{
+//#if UNITY_EDITOR
+//			if (OnGetImage == null) {
+//				Debug.LogError ("Callback is null.");
+//				return;
+//			}
+//#endif
+//
+//			StartCoroutine (DoGetImage(id, imageURL));
+//		}
 
 		#region Implementation.
 		private IEnumerator DoGetMostRecentEntries ()
 		{
-			// TODO: count + offset + paging
 			string url = SERVER_URL + "/models/most_recent";
 			
 			WWW www = new WWW (url);
 			yield return www;
 			
 			if (!string.IsNullOrEmpty(www.error)) {
-				Debug.LogError (www.error);
+				DoErrorCallback (www.error);
 				yield break;
 			}
-			
-			Debug.Log ("success: ");
-//			Debug.Log (www.text);
 
-			Debug.Log (Omg(www.text));
+			if (!DoGetMostRecentEntriesReceiveResponse (www.text)) {
+				Debug.LogWarning ("JSON parsing error.");
+			}
 		}
 
-		public struct DataInfo {
-			public string id;
-			public string name;
-			public string imageURL;
-			public int downloadCount;
-			public int likeCount;
-			public int version;
-		}
-
-		private bool Omg (string text)
+		private bool DoGetMostRecentEntriesReceiveResponse (string text)
 		{
-			var dict = UzuMiniJSON.Json.Deserialize(text) as Dictionary<string,object>;
+			var dict = Uzu.MiniJSON.Deserialize(text) as Dictionary<string,object>;
 			if (dict == null) {
 				return false;
 			}
 
-			// TODO: better error handling
-			object tmp;
-			if (dict.TryGetValue ("data", out tmp)) {
-				List<object> dataObjects;
-				if (!AsList (tmp, out dataObjects)) {
-					return false;
+			List<object> dataObjects;
+			if (!BlockInfo.GetValue (dict, "data", out dataObjects)) {
+				return false;
+			}
+
+			for (int i = 0; i < dataObjects.Count; i++) {
+				var dataObject = dataObjects[i] as Dictionary<string, object>;
+
+				BlockInfo info;
+				if (BlockInfo.Load (dataObject, out info)) {
+					OnGetMostRecentEntries (info);
 				}
+			}
 
-				for (int i = 0; i < dataObjects.Count; i++) {
-					var dataObject = dataObjects[i] as Dictionary<string, object>;
+			return true;
+		}
 
-					DataInfo dataInfo = new DataInfo();
-					dataInfo.id = (string)dataObject ["id"];
-					dataInfo.imageURL = (string)dataObject ["imageURL"];
-					dataInfo.downloadCount = AsInt(dataObject ["downloadCount"]);
-					dataInfo.likeCount = AsInt(dataObject ["likeCount"]);
-					dataInfo.version = AsInt(dataObject ["version"]);
+		private void DoErrorCallback (string errorText)
+		{
+			if (OnError != null) {
+				int resultCode = 0;
+				TryParseErrorCode (errorText, ref resultCode);
+				
+				OnError (resultCode, errorText);
+			}
+		}
 
-					OnGetMostRecentEntries (dataInfo);
-				}
-
-				return true;
+		/// <summary>
+		/// Attempt to parse the error code from the error string.
+		/// </summary>
+		private static bool TryParseErrorCode (string errorString, ref int resultCode)
+		{
+			if (errorString.Length >= 3) {
+				string substr = errorString.Substring (0, 3);
+				return System.Int32.TryParse (substr, out resultCode);
 			}
 
 			return false;
 		}
 
-		private bool AsList(object obj, out List<object> res)
-		{
-			res = obj as List<object>;
-			return res != null;
-		}
-
-		private int AsInt(object obj)
-		{
-			// JSON library only supports long.
-			return (int)(long)obj;
-		}
-
-		private IEnumerator DoGetImage (string id, string imageURL)
-		{
-			WWW www = new WWW (imageURL);
-			yield return www;
-			
-			if (!string.IsNullOrEmpty(www.error)) {
-				Debug.LogError (www.error);
-				yield break;
-			}
-			
-			Debug.Log ("success: ");
-			//Debug.Log (www.text);
-
-			Texture2D texture = www.textureNonReadable;
-			Debug.Log ("Texture: " + texture);
-
-			OnGetImage(id, texture);
-		}
+//		private IEnumerator DoGetImage (string id, string imageURL)
+//		{
+//			WWW www = new WWW (imageURL);
+//			yield return www;
+//			
+//			if (!string.IsNullOrEmpty(www.error)) {
+//				Debug.LogError (www.error);
+//				yield break;
+//			}
+//			
+//			Debug.Log ("success: ");
+//			//Debug.Log (www.text);
+//
+//			Texture2D texture = www.textureNonReadable;
+//			Debug.Log ("Texture: " + texture);
+//
+//			OnGetImage(id, texture);
+//		}
 		#endregion
 	}
 }

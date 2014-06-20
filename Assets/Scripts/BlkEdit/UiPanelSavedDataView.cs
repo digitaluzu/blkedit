@@ -17,7 +17,7 @@ namespace Blk
 			Main.ScrollViewController.WindowTitleText = "Saved Models";
 			Main.ScrollViewController.NoDataText = "No Models";
 			Main.ScrollViewController.DisabledEntryId = Main.WorkspaceController.ActiveBlockInfoId;
-			Main.ScrollViewController.EntryButtonText = "View";
+			Main.ScrollViewController.EntryButtonDefaultText = "View";
 			Main.ScrollViewController.OnTableEntryButtonClicked += OnTableEntryButtonClicked;
 			
 			_infos = WorkspaceController.GetSavedBlockInfos ();

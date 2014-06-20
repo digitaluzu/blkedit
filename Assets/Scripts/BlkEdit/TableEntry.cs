@@ -6,7 +6,9 @@ namespace Blk
 	public class TableEntry : Uzu.PooledBehaviour
 	{
 		[SerializeField]
-		private UILabel _label;
+		private UILabel _nameLabel;
+		[SerializeField]
+		private UILabel _idLabel;
 		[SerializeField]
 		private UITexture _texture;
 		[SerializeField]
@@ -15,7 +17,8 @@ namespace Blk
 		private UILabel _buttonLabel;
 
 		public string Id {
-			get; set;
+			get { return _idLabel.text; }
+			set { _idLabel.text = value; }
 		}
 
 		public UIButton Button {
@@ -27,8 +30,8 @@ namespace Blk
 			set { _buttonLabel.text = value; }
 		}
 
-		public string Text {
-			set { _label.text = value; }
+		public string NameText {
+			set { _nameLabel.text = value; }
 		}
 
 		public Texture2D Texture {

@@ -89,36 +89,5 @@ namespace Blk
 				_saveButton.isEnabled = false;
 			}
 		}
-
-		private void DoSearchOnline ()
-		{
-			/*
-			_scrollViewObject.SetActive (true);
-
-			_tableController.ClearEntries ();
-
-			// TODO: move to awake or setup function..
-			Main.HttpRequestHandler.OnGetMostRecentEntries = OnGetMostRecentEntries;
-			Main.HttpRequestHandler.OnGetImage = OnGetImage;
-
-			Main.HttpRequestHandler.GetMostRecentEntries();
-			*/
-		}
-
-		private void OnGetMostRecentEntries (HttpRequestHandler.DataInfo data)
-		{
-			Debug.Log ("OnGetMostRecentEntries");
-
-		//	_tableController.AddEntry (data.id);
-
-		//	Main.HttpRequestHandler.GetImage (data.id, data.imageURL);
-		}
-
-		private void OnGetImage (string id, Texture2D texture)
-		{
-			Debug.Log ("OnGetImage");
-
-//			_tableController.UpdateEntry (id, texture);
-		}
 	}
 }

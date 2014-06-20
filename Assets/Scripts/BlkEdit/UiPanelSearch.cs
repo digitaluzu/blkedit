@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace Blk
 {
+	// TODO: cache results for certain time period w/o doing repeated HTTP requests
+	//	- for example, 1-2 minutes for 'recent'
+	//  - 5 - 10 min for 'most downloaded'.. etc.
 	public class UiPanelSearch : Uzu.UiPanel
 	{
 		private const string BUTTON_ID_CLOSE = "Button-Close";
@@ -13,15 +16,27 @@ namespace Blk
 
 		private bool _isScrollViewOpen;
 
+		private List <BlkEdit.BlockInfo> _infos;
+
 		public override void OnActivate ()
 		{
 			_isScrollViewOpen = false;
+
+			// Setup callbacks.
+			Main.HttpRequestHandler.OnError += OnHttpError;
+			Main.HttpRequestHandler.OnGetMostRecentEntries += OnGetMostRecentEntries;
+//			Main.HttpRequestHandler.OnGetImage += OnGetImage;
+
+			_infos = WorkspaceController.GetSavedBlockInfos ();
 		}
 
 		public override void OnDeactivate ()
 		{
-			// Stop all requests.
-			Main.HttpRequestHandler.StopAllCoroutines ();
+			// Remove callbacks.
+			Main.HttpRequestHandler.OnError -= OnHttpError;
+			Main.HttpRequestHandler.OnGetMostRecentEntries -= OnGetMostRecentEntries;
+
+			Main.HttpRequestHandler.StopAllRequests ();
 		}
 
 		public override void OnClick (Uzu.UiWidget widget)
@@ -47,14 +62,6 @@ namespace Blk
 			}
 		}
 
-		protected override void Awake ()
-		{
-			base.Awake ();
-
-			Main.HttpRequestHandler.OnGetMostRecentEntries = OnGetMostRecentEntries;
-//			Main.HttpRequestHandler.OnGetImage = OnGetImage;
-		}
-
 		private void DoSearchByName ()
 		{
 			_isScrollViewOpen = true;
@@ -78,8 +85,8 @@ namespace Blk
 			Main.ScrollViewController.WindowTitleText = "Most Recent";
 			Main.ScrollViewController.NoDataText = "No Models";
 //			Main.ScrollViewController.DisabledEntryId = Main.WorkspaceController.ActiveBlockInfoId;
-			Main.ScrollViewController.EntryButtonText = "Get";
-//			Main.ScrollViewController.OnTableEntryButtonClicked += OnTableEntryButtonClicked;
+			Main.ScrollViewController.EntryButtonDefaultText = "Get";
+			Main.ScrollViewController.OnTableEntryButtonClicked += OnTableEntryButtonClicked;
 
 			Main.HttpRequestHandler.GetMostRecentEntries();
 		}
@@ -95,19 +102,43 @@ namespace Blk
 			}
 		}
 
-		private void OnGetMostRecentEntries (HttpRequestHandler.DataInfo data)
+		private void OnTableEntryButtonClicked (string id, string buttonText)
 		{
-			Debug.Log (data.id);
+			Debug.Log (buttonText);
 
-			BlkEdit.BlockInfo info = new BlkEdit.BlockInfo ();
-			info.Id = data.id;
-			info.Name = data.name;
+			// TODO: 
+		}
 
+		private void OnHttpError (int errorCode, string errorText)
+		{
+			Debug.LogError ("HTTP Error: " + errorCode + "..." + errorText);
+		}
+
+		private void OnGetMostRecentEntries (BlkEdit.BlockInfo info)
+		{
 			Main.ScrollViewController.AppendEntry (info);
-			
-			//	_tableController.AddEntry (data.id);
-			
+
+			// TODO: updating if version is not the same?
+			if (HasSavedInfo (info.Id)) {
+				Main.ScrollViewController.SetEntryButtonText (info.Id, "View");
+			}
+			else {
+				Main.ScrollViewController.SetEntryButtonText (info.Id, "Get");
+			}
+
 			//	Main.HttpRequestHandler.GetImage (data.id, data.imageURL);
+		}
+
+		private bool HasSavedInfo (string id)
+		{
+			for (int i = 0; i < _infos.Count; i++) {
+				BlkEdit.BlockInfo info = _infos [i];
+				if (info.Id == id) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }

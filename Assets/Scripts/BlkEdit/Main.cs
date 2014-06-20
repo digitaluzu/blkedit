@@ -25,7 +25,7 @@ namespace Blk
 			get { return _instance._workspaceController; }
 		}
 
-		public static HttpRequestHandler HttpRequestHandler {
+		public static BlkEdit.HttpRequestHandler HttpRequestHandler {
 			get { return _instance._httpRequestHandler; }
 		}
 
@@ -47,8 +47,8 @@ namespace Blk
 				_commandMgr = new BlkEdit.CommandMgr ();
 
 				{
-					GameObject go = new GameObject ("HttpRequestHandler", typeof (HttpRequestHandler));
-					_httpRequestHandler = go.GetComponent <HttpRequestHandler> ();
+					GameObject go = new GameObject ("HttpRequestHandler", typeof (BlkEdit.HttpRequestHandler));
+					_httpRequestHandler = go.GetComponent <BlkEdit.HttpRequestHandler> ();
 				}
 
 				// Create block world.
@@ -121,7 +121,7 @@ namespace Blk
 
 		private BlkEdit.CommandMgr _commandMgr;
 		private Uzu.BlockWorld _blockWorld;
-		private HttpRequestHandler _httpRequestHandler;
+		private BlkEdit.HttpRequestHandler _httpRequestHandler;
 		#endregion
 		
 		#region Implementation.	

@@ -32,7 +32,7 @@ namespace BlkEdit
 				dict.Add ("imagePath", info.ImagePath);
 			}
 
-			string jsonStr = UzuMiniJSON.Json.Serialize (dict);
+			string jsonStr = Uzu.MiniJSON.Serialize (dict);
 
 			using (StreamWriter writer = new StreamWriter (path)) {
 				writer.Write (jsonStr);
@@ -43,30 +43,93 @@ namespace BlkEdit
 
 		public static bool Load (string path, out BlockInfo info)
 		{
-			info = new BlockInfo ();
-
 			string jsonStr = string.Empty;
 			using (StreamReader reader = new StreamReader(path)) {            
 				jsonStr = reader.ReadToEnd();
 			}
 
-			var dict = UzuMiniJSON.Json.Deserialize (jsonStr) as Dictionary<string,object>;
+			var dict = Uzu.MiniJSON.Deserialize (jsonStr) as Dictionary<string, object>;
+			return Load (dict, out info);
+		}
+
+		public static bool Load (Dictionary <string, object> dict, out BlockInfo info)
+		{
+			info = new BlockInfo ();
 
 			{
-				info.Id = (string)dict ["id"];
-				info.Name = (string)dict ["name"];
-				info.BlockDataPath = (string)dict ["blockDataPath"];
-				info.ImagePath = (string)dict ["imagePath"];
+				if (!GetValue (dict, "id", out info.Id)) {
+					return false;
+				}
+
+				GetValue (dict, "name", out info.Name);
+				GetValue (dict, "blockDataPath", out info.BlockDataPath);
+				GetValue (dict, "imagePath", out info.ImagePath);
+				GetValue (dict, "imageURL", out info.ImageURL);
+				GetValue (dict, "downloadCount", out info.DownloadCount);
+				GetValue (dict, "likeCount", out info.LikeCount);
+				GetValue (dict, "version", out info.Version);
 			}
 
 			return true;
 		}
 
-		public string Id { get; set; }
-		public string Name { get; set; }
-		public string BlockDataPath { get; set; }
-		public string ImagePath { get; set; }
+		public string Id;
+		public string Name;
+		public string BlockDataPath;
+		public string ImagePath;
+		public string ImageURL;
+
+		public int DownloadCount;
+		public int LikeCount;
+		public int Version;
 
 		// TODO: Can edit? Is uploaded? etc
+
+		public override string ToString()
+		{
+			return string.Format("id={0},name={1},blockDataPath={2},imagePath={3},imageURL={4},downloadCount={5},likeCount={6},version={7}",
+			                     Id, Name, BlockDataPath, ImagePath, ImageURL, DownloadCount, LikeCount, Version);
+		}
+
+		// TODO: move to utility in UzuCore?
+		public static bool GetValue (Dictionary <string, object> dict, string keyName, out List<object> result)
+		{
+			object tmpObj;
+			if (dict.TryGetValue (keyName, out tmpObj)) {
+				result = tmpObj as List <object>;
+				return result != null;
+			}
+			
+			result = null;
+			return false;
+		}
+
+		public static bool GetValue (Dictionary <string, object> dict, string keyName, out string result)
+		{
+			object tmpObj;
+			if (dict.TryGetValue (keyName, out tmpObj)) {
+				result = tmpObj as string;
+				return result != null;
+			}
+			
+			result = null;
+			return false;
+		}
+
+		public static bool GetValue (Dictionary <string, object> dict, string keyName, out int result)
+		{
+			object tmpObj;
+			if (dict.TryGetValue (keyName, out tmpObj)) {
+				// JSON library only supports long.
+				long? tmpResult = tmpObj as long?;
+				if (tmpResult.HasValue) {
+					result = (int)tmpResult.Value;
+					return true;
+				}
+			}
+
+			result = 0;
+			return false;
+		}
 	}
 }
