@@ -15,31 +15,32 @@ namespace Blk
 		private TableEntry _entryPrefab;
 
 		private UITable _table;
-
 		private Dictionary<string, TableEntry> _entries = new Dictionary<string, TableEntry>();
 
-		public void AddEntry (string id)
+		public void AddEntry (BlkEdit.BlockInfo info)
 		{
-			// TODO: guard against duplicate id.... delete existing id entry if duplicate detected
-
-			GameObject go = _tableEntryPool.Spawn (Vector3.zero);
-			Transform xform = go.transform;
-
-			xform.parent = CachedXform;
-			xform.localScale = Vector3.one;
-
-			// TODO:
-			{
-				TableEntry entry = go.GetComponent <TableEntry> ();
-				entry.Text = id;
-				entry.Id = id;
-				entry.TEMP_TC = this;
-
-				_entries.Add(id, entry);
+			if (_entries.ContainsKey (info.Id)) {
+				Debug.LogWarning ("Duplicate id detected: " + info.Id);
+				return;
 			}
 
+			// Spawn an entry.
+			GameObject go = _tableEntryPool.Spawn (Vector3.zero);
+			TableEntry entry = go.GetComponent <TableEntry> ();
+			entry.CachedXform.parent = CachedXform;
+			entry.CachedXform.localScale = Vector3.one;
+
+			// Set it up.
+			{
+				entry.Text = info.Name;
+				entry.Id = info.Id;
+				entry.OwnerController = this;
+			}
+
+			_entries.Add (info.Id, entry);
+
+			// Refresh table immediately to prevent flicker.
 			_table.Reposition ();
-//			_table.repositionNow = true;
 		}
 
 		// TODO:
@@ -57,18 +58,15 @@ namespace Blk
 			{
 				entry.Texture = texture;
 			}
-			
-			_table.Reposition ();
-			//			_table.repositionNow = true;
+
+			_table.repositionNow = true;
 		}
 
 		public void ClearEntries ()
 		{
 			_tableEntryPool.UnspawnAll ();
-			_table.repositionNow = true;
-//			_table.Reposition ();
-
 			_entries.Clear ();
+			_table.repositionNow = true;
 		}
 
 		protected override void Awake ()

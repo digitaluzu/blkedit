@@ -46,9 +46,19 @@ namespace Blk
 			get { return _needsSave; }
 		}
 
-		public void New ()
+		public WorkspaceController ()
+		{
+			Main.CommandMgr.OnCommandExecuted += OnCommandExecuted;
+		}
+
+		private void OnCommandExecuted (BlkEdit.CommandInterface cmd)
 		{
 			_needsSave = true;
+		}
+
+		public void New ()
+		{
+			_needsSave = false;
 
 			// Create directories for later writing.
 			System.IO.Directory.CreateDirectory(FileUtil.LocalModelPath);
@@ -70,7 +80,7 @@ namespace Blk
 			// Block info.
 			{
 				BlkEdit.BlockInfo info = new BlkEdit.BlockInfo ();
-				info.Id = FileUtil.GetNewFileName ();	// TODO:
+				info.Id = BlkEdit.BlockInfo.GetNewId ();
 				info.Name = "Foo Name";
 				info.BlockDataPath = _savePathBlockData;
 				info.ImagePath = "...";
@@ -91,6 +101,8 @@ namespace Blk
 				byte[] data = Uzu.BlockWriter.Write (blocks);
 				Uzu.BlockIO.WriteFile (_savePathBlockData, data);
 			}
+
+			_needsSave = false;
 		}
 
 		public void Load (BlkEdit.BlockInfo info)

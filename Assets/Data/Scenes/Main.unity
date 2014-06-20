@@ -936,17 +936,17 @@ MonoBehaviour:
   updateAnchors: 1
   mColor: {r: 0, g: 0, b: 0, a: 1}
   mPivot: 4
-  mWidth: 44
+  mWidth: 72
   mHeight: 16
   mDepth: 3
   autoResizeBoxCollider: 0
   hideIfOffScreen: 0
   keepAspectRatio: 0
-  aspectRatio: 2.75
+  aspectRatio: 4.5
   keepCrispWhenShrunk: 1
   mTrueTypeFont: {fileID: 12800000, guid: 068be63cbad6d4a2e92967716b6e705d, type: 3}
   mFont: {fileID: 0}
-  mText: Load
+  mText: My Files
   mFontSize: 16
   mFontStyle: 0
   mAlignment: 0
@@ -1309,7 +1309,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 508326443}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -150, y: 10, z: 0}
+  m_LocalPosition: {x: -170, y: 10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1610356391}
@@ -3897,6 +3897,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0ea173cd62de4e2db571a93f39ed211, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _saveButton: {fileID: 508326445}
   _searchOnlineObject: {fileID: 737488867}
   _tableController: {fileID: 2101021076}
 --- !u!114 &1967947511

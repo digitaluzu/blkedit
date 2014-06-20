@@ -5,6 +5,10 @@ namespace Blk
 {
 	public class TableEntry : Uzu.PooledBehaviour
 	{
+		public string Id {
+			get; set;
+		}
+
 		public string Text {
 			set { _label.text = value; }
 		}
@@ -13,11 +17,7 @@ namespace Blk
 			set { _texture.mainTexture = value; }
 		}
 
-		public string Id {
-			get; set;
-		}
-
-		public TableController TEMP_TC {
+		public TableController OwnerController {
 			get; set;
 		}
 
@@ -38,7 +38,7 @@ namespace Blk
 
 		private void OnButtonClicked (GameObject go)
 		{
-			TEMP_TC.OnButtonClicked (Id);
+			OwnerController.OnButtonClicked (Id);
 		}
 	}
 }

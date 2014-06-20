@@ -10,6 +10,17 @@ namespace BlkEdit
 			get { return "blki"; }
 		}
 
+		/// <summary>
+		/// Id used to differentiate local files.
+		/// Files that are uploaded to the server will be assigned
+		/// their own unique id.
+		/// </summary>
+		public static string GetNewId ()
+		{
+			System.Guid guid = System.Guid.NewGuid ();
+			return string.Format (@"{0}", guid);
+		}
+
 		public static bool Save (string path, BlockInfo info)
 		{
 			var dict = new Dictionary<string, object> ();
@@ -55,5 +66,7 @@ namespace BlkEdit
 		public string Name { get; set; }
 		public string BlockDataPath { get; set; }
 		public string ImagePath { get; set; }
+
+		// TODO: Can edit? Is uploaded? etc
 	}
 }

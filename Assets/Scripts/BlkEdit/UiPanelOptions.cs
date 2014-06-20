@@ -14,6 +14,16 @@ namespace Blk
 		private const string BUTTON_ID_MODE_ERASE = "Button-ModeErase";
 		private const string BUTTON_ID_MODE_EYEDROP = "Button-ModeEyedrop";
 
+		[SerializeField]
+		private UIButton _saveButton;
+
+		public override void OnActivate ()
+		{
+			ShowScrollView (false);
+
+			RefreshIcons ();
+		}
+
 		public override void OnClick (Uzu.UiWidget widget)
 		{
 			switch (widget.name)
@@ -23,11 +33,16 @@ namespace Blk
 				break;
 
 			case BUTTON_ID_LOAD:
-				DoLoad ();
+				DoShowLocalData ();
 				break;
 
 			case BUTTON_ID_CLOSE:
-				DoClose ();
+				if (IsScrollViewVisible ()) {
+					ShowScrollView (false);
+				}
+				else {
+					DoClose ();
+				}
 				break;
 
 			case BUTTON_ID_SEARCH:
@@ -48,11 +63,6 @@ namespace Blk
 			}
 		}
 
-		private void DoSave ()
-		{
-			Main.WorkspaceController.Save ();
-		}
-
 		private void DoSelectTool (GridController.Mode mode)
 		{
 			Main.GridController.CurrentMode = mode;
@@ -61,13 +71,22 @@ namespace Blk
 
 		private void DoClose ()
 		{
-			// TODO: hmmm...
-			if (_searchOnlineObject.activeSelf) {
-				_searchOnlineObject.SetActive (false);
-				return;
-			}
-
 			Main.PanelMgr.ChangeCurrentPanel (PanelIds.PANEL_CANVAS);
+		}
+
+		private bool IsScrollViewVisible ()
+		{
+			return _searchOnlineObject.activeSelf;
+		}
+
+		private void ShowScrollView (bool isVisible)
+		{
+			_searchOnlineObject.SetActive (isVisible);
+		}
+
+		private void RefreshIcons ()
+		{
+			_saveButton.isEnabled = Main.WorkspaceController.NeedsSave;
 		}
 
 		[SerializeField]
@@ -77,23 +96,29 @@ namespace Blk
 
 		private List <BlkEdit.BlockInfo> _infos;
 
-		private void DoLoad ()
+		private void DoSave ()
 		{
-			_searchOnlineObject.SetActive (true);
+			Main.WorkspaceController.Save ();
+		}
+
+		// TODO:
+		// - callback to know if workspace changes... save becomes required
+		
+		private void DoShowLocalData ()
+		{
+			ShowScrollView (true);
 			_tableController.ClearEntries ();
 
 			_tableController.OnButtonClicked = OnButtonClicked;
 
 			_infos = WorkspaceController.GetLocalBlockInfos ();
 			for (int i = 0; i < _infos.Count; i++) {
-				_tableController.AddEntry (_infos [i].Id);
+				_tableController.AddEntry (_infos [i]);
 			}
 		}
 
 		private void OnButtonClicked (string id)
 		{
-			Debug.Log ("BUTTON CLICKED: " + id);
-
 			for (int i = 0; i < _infos.Count; i++) {
 				if (_infos [i].Id == id) {
 					Main.WorkspaceController.Load (_infos [i]);
@@ -121,9 +146,9 @@ namespace Blk
 		{
 			Debug.Log ("OnGetMostRecentEntries");
 
-			_tableController.AddEntry (data.id);
+		//	_tableController.AddEntry (data.id);
 
-			Main.HttpRequestHandler.GetImage (data.id, data.imageURL);
+		//	Main.HttpRequestHandler.GetImage (data.id, data.imageURL);
 		}
 
 		private void OnGetImage (string id, Texture2D texture)
