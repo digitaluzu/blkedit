@@ -7,19 +7,29 @@ namespace Blk
 	{
 		public static List <BlkEdit.BlockInfo> GetLocalBlockInfos ()
 		{
+			return GetBlockInfos (FileUtil.LocalModelPath);
+		}
+
+		public static List <BlkEdit.BlockInfo> GetSavedBlockInfos ()
+		{
+			return GetBlockInfos (FileUtil.SavedModelPath);
+		}
+
+		private static List <BlkEdit.BlockInfo> GetBlockInfos (string path)
+		{
 			List <string> paths = new List<string> ();
 			
 			// Get the paths.
 			{
-				System.IO.DirectoryInfo levelDirInfo = new System.IO.DirectoryInfo (FileUtil.LocalModelPath);
+				System.IO.DirectoryInfo levelDirInfo = new System.IO.DirectoryInfo (path);
 				System.IO.FileInfo[] files = levelDirInfo.GetFiles ("*." + BlkEdit.BlockInfo.Extension);
 				for (int i = 0; i < files.Length; i++) {
 					paths.Add (files [i].FullName);
 				}
 			}
-
+			
 			List <BlkEdit.BlockInfo> infos = new List<BlkEdit.BlockInfo> (paths.Count);
-
+			
 			// Create infos.
 			{
 				for (int i = 0; i < paths.Count; i++) {
@@ -32,9 +42,9 @@ namespace Blk
 					}
 				}
 			}
-
+			
 			// TODO: sort infos based on: name? modified data? ...
-
+			
 			return infos;
 		}
 
@@ -168,6 +178,8 @@ namespace Blk
 				// Refresh the grid.
 				Main.GridController.RebuildGrid (blockData);
 			}
+
+			_needsSave = false;
 		}
 
 		#region Implementation.
@@ -186,29 +198,20 @@ namespace Blk
 			
 			if (ch >= 'a' && ch <= 'z')
 			{
-				// Space followed by a letter -- make sure it's capitalized
-				if (lastChar == ' ') return (char)(ch - 'a' + 'A');
 				return ch;
 			}
 			else if (ch >= 'A' && ch <= 'Z')
 			{
-//				// Uppercase letters are only allowed after spaces (and apostrophes)
-//				if (lastChar != ' ' && lastChar != '\'') return (char)(ch - 'A' + 'a');
 				return ch;
-			}
-			else if (ch == '\'')
-			{
-				// Don't allow more than one apostrophe
-				if (lastChar != ' ' && lastChar != '\'' && nextChar != '\'' && !text.Contains("'")) return ch;
-			}
-			else if (ch == ' ')
-			{
-				// Don't allow more than one space in a row
-				if (lastChar != ' ' && lastChar != '\'' && nextChar != ' ' && nextChar != '\'') return ch;
 			}
 			else if (ch >= '0' && ch <= '9')
 			{
 				return ch;
+			}
+			else if (ch == ' ')
+			{
+				// Don't allow more than one space in a row
+				if (lastChar != ' ' && nextChar != ' ') return ch;
 			}
 			
 			return (char)0;

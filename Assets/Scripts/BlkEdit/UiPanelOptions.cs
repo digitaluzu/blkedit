@@ -9,6 +9,9 @@ namespace Blk
 		private const string BUTTON_ID_LOAD = "Button-Load";
 		private const string BUTTON_ID_CLOSE = "Button-Close";
 		private const string BUTTON_ID_SEARCH = "Button-Search";
+		private const string BUTTON_ID_SEARCH_BY_NAME = "Button-Search-ByName";
+		private const string BUTTON_ID_SEARCH_MOST_RECENT = "Button-Search-MostRecent";
+		private const string BUTTON_ID_SAVED = "Button-Saved";
 
 		private const string BUTTON_ID_MODE_ADD = "Button-ModeAdd";
 		private const string BUTTON_ID_MODE_ERASE = "Button-ModeErase";
@@ -17,11 +20,15 @@ namespace Blk
 		[SerializeField]
 		private GameObject _scrollViewObject;
 		[SerializeField]
+		private UILabel _scrollViewTitle;
+		[SerializeField]
 		private TableController _tableController;
 		[SerializeField]
 		private UIButton _saveButton;
 		[SerializeField]
 		private DialogBox _dialogBox2;
+		[SerializeField]
+		private GameObject _searchOptionsObject;
 		
 		private List <BlkEdit.BlockInfo> _infos;
 
@@ -30,6 +37,8 @@ namespace Blk
 			base.Awake ();
 
 			_tableController.OnButtonClicked = OnScrollViewButtonClicked;
+
+			_searchOptionsObject.SetActive (false);
 		}
 
 		public override void OnActivate ()
@@ -61,7 +70,19 @@ namespace Blk
 				break;
 
 			case BUTTON_ID_SEARCH:
-				DoSearchOnline ();
+				_searchOptionsObject.SetActive (true);
+				break;
+
+			case BUTTON_ID_SEARCH_BY_NAME:
+
+				break;
+
+			case BUTTON_ID_SEARCH_MOST_RECENT:
+
+				break;
+
+			case BUTTON_ID_SAVED:
+				DoShowSavedData ();
 				break;
 
 			case BUTTON_ID_MODE_ADD:
@@ -99,6 +120,8 @@ namespace Blk
 		{
 			_currentScrollViewMode = mode;
 			_scrollViewObject.SetActive (true);
+
+			_scrollViewTitle.text = mode.ToString ();
 		}
 
 		private void HideScrollView ()
@@ -124,12 +147,12 @@ namespace Blk
 			else if (!Main.WorkspaceController.NeedsSave && _saveButton.isEnabled) {
 				_saveButton.isEnabled = false;
 			}
-
 		}
 
 		private enum ScrollViewMode {
 			None,
 			LocalData,
+			SavedData,
 		}
 
 		private ScrollViewMode _currentScrollViewMode;
@@ -144,6 +167,27 @@ namespace Blk
 				_tableController.AddEntry (_infos [i]);
 			}
 
+			// TODO: if no infos, show NO DATA label
+
+			// Disable the currently active entry.
+			if (Main.WorkspaceController.HasActiveBlockInfo) {
+				string currentId = Main.WorkspaceController.ActiveBlockInfoId;
+				_tableController.DisableEntry (currentId);
+			}
+		}
+
+		private void DoShowSavedData ()
+		{
+			ShowScrollView (ScrollViewMode.SavedData);
+			_tableController.ClearEntries ();
+			
+			_infos = WorkspaceController.GetSavedBlockInfos ();
+			for (int i = 0; i < _infos.Count; i++) {
+				_tableController.AddEntry (_infos [i]);
+			}
+
+			// TODO: if no infos, show NO DATA label
+			
 			// Disable the currently active entry.
 			if (Main.WorkspaceController.HasActiveBlockInfo) {
 				string currentId = Main.WorkspaceController.ActiveBlockInfoId;
