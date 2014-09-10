@@ -9,7 +9,8 @@ namespace BlkEdit
 	{
 		public const string API_VERSION = "v0";
 		public const string PORT = "3000";
-		public const string SERVER_URL = "http://localhost:" + PORT + "/api/" + API_VERSION;
+		//public const string SERVER_URL = "http://localhost:" + PORT + "/api/" + API_VERSION;
+		public const string SERVER_URL = "http://192.168.0.5:" + PORT + "/api/" + API_VERSION;
 
 		public delegate void OnErrorDelegate (int httpErrorCode, string errorText);
 		public event OnErrorDelegate OnError;
