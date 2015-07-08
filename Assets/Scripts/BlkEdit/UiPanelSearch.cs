@@ -165,6 +165,7 @@ namespace Blk
 				return;
 			}
 
+			// TODO: BlockiNfo is a struct, so this won't change the actual instance...
 			info.BlockDataPath = blockDataPath;
 
 			BlkEdit.BlockInfo.Save (blockInfoPath, info);
